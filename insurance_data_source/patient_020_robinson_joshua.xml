@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Updated: 2025-07-27T12:58:15-05:00 -->
+<EligibilityResponse xmlns="http://x12.org/schemas/005010/270271" version="005010" transactionSet="271">
+  <TransactionHeader>
+    <HierarchicalStructureCode>0022</HierarchicalStructureCode>
+    <TransactionSetPurposeCode>11</TransactionSetPurposeCode>
+    <ReferenceIdentification>ELG000000020</ReferenceIdentification>
+    <Date>2025-07-25</Date>
+    <Time>16:45:00</Time>
+  </TransactionHeader>
+  <InformationSource>
+    <EntityIdentifierCode>PR</EntityIdentifierCode>
+    <EntityTypeQualifier>2</EntityTypeQualifier>
+    <OrganizationName>Cigna Health</OrganizationName>
+    <PayerIdentification>62308</PayerIdentification>
+  </InformationSource>
+  <InformationReceiver>
+    <EntityIdentifierCode>1P</EntityIdentifierCode>
+    <EntityTypeQualifier>2</EntityTypeQualifier>
+    <OrganizationName>Memorial Healthcare Center</OrganizationName>
+    <ProviderIdentification>1234567890</ProviderIdentification>
+  </InformationReceiver>
+  <Subscriber>
+    <EntityIdentifierCode>IL</EntityIdentifierCode>
+    <EntityTypeQualifier>1</EntityTypeQualifier>
+    <LastName>Robinson</LastName>
+    <FirstName>Joshua</FirstName>
+    <MiddleName>William</MiddleName>
+    <MemberIdentification>CIG623012345</MemberIdentification>
+    <SocialSecurityNumber>012-34-5678</SocialSecurityNumber>
+    <DateOfBirth>1994-05-29</DateOfBirth>
+    <Gender>M</Gender>
+    <GroupNumber>GRP020</GroupNumber>
+    <Address>
+      <AddressLine1>888 Oak Avenue</AddressLine1>
+      <AddressLine2>Apt 6B</AddressLine2>
+      <City>Plano</City>
+      <State>TX</State>
+      <PostalCode>75024</PostalCode>
+    </Address>
+  </Subscriber>
+  <EligibilityInfo>
+    <EligibilityStatusCode>1</EligibilityStatusCode>
+    <CoverageLevel>FAM</CoverageLevel>
+    <ServiceType>30</ServiceType>
+    <PlanCoverageDescription>Traditional Indemnity</PlanCoverageDescription>
+    <EffectiveDate>2025-01-01</EffectiveDate>
+    <TerminationDate>2025-12-31</TerminationDate>
+  </EligibilityInfo>
+  <BenefitInfo>
+    <BenefitCode>1</BenefitCode>
+    <CoverageLevel>FAM</CoverageLevel>
+    <ServiceType>30</ServiceType>
+    <BenefitAmount>2000.00</BenefitAmount>
+    <DeductibleAmount>3000.00</DeductibleAmount>
+    <CoInsurancePercent>25</CoInsurancePercent>
+    <CopayAmount>20.00</CopayAmount>
+    <NetworkIndicator>Y</NetworkIndicator>
+  </BenefitInfo>
+</EligibilityResponse>

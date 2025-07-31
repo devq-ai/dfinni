@@ -1,0 +1,287 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-07-25T10:00:00Z",
+  "source_format": "X12_271_XML",
+  "target_system": "Patient_Management_System",
+  "field_mappings": {
+    "patient_core": {
+      "first_name": {
+        "source_path": "//x12:Subscriber/x12:FirstName",
+        "target_field": "first_name",
+        "data_type": "string",
+        "required": true,
+        "max_length": 50,
+        "validation_rules": ["no_special_chars", "title_case"]
+      },
+      "last_name": {
+        "source_path": "//x12:Subscriber/x12:LastName",
+        "target_field": "last_name",
+        "data_type": "string",
+        "required": true,
+        "max_length": 50,
+        "validation_rules": ["no_special_chars", "title_case"]
+      },
+      "middle_name": {
+        "source_path": "//x12:Subscriber/x12:MiddleName",
+        "target_field": "middle_name",
+        "data_type": "string",
+        "required": false,
+        "max_length": 50,
+        "validation_rules": ["no_special_chars", "title_case"],
+        "default_value": null
+      },
+      "date_of_birth": {
+        "source_path": "//x12:Subscriber/x12:DateOfBirth",
+        "target_field": "date_of_birth",
+        "data_type": "date",
+        "required": true,
+        "format": "YYYY-MM-DD",
+        "validation_rules": ["valid_date", "reasonable_age"]
+      },
+      "gender": {
+        "source_path": "//x12:Subscriber/x12:Gender",
+        "target_field": "gender",
+        "data_type": "string",
+        "required": false,
+        "validation_rules": ["valid_gender_code"],
+        "value_mapping": {
+          "M": "Male",
+          "F": "Female",
+          "U": "Unknown"
+        }
+      }
+    },
+    "address": {
+      "street_address": {
+        "source_path": "//x12:Subscriber/x12:Address/x12:AddressLine1",
+        "target_field": "street_address",
+        "data_type": "string",
+        "required": true,
+        "max_length": 100
+      },
+      "address_line_2": {
+        "source_path": "//x12:Subscriber/x12:Address/x12:AddressLine2",
+        "target_field": "address_line_2",
+        "data_type": "string",
+        "required": false,
+        "max_length": 50
+      },
+      "city": {
+        "source_path": "//x12:Subscriber/x12:Address/x12:City",
+        "target_field": "city",
+        "data_type": "string",
+        "required": true,
+        "max_length": 50,
+        "validation_rules": ["valid_city_name"]
+      },
+      "state": {
+        "source_path": "//x12:Subscriber/x12:Address/x12:State",
+        "target_field": "state",
+        "data_type": "string",
+        "required": true,
+        "max_length": 2,
+        "validation_rules": ["valid_state_code"]
+      },
+      "postal_code": {
+        "source_path": "//x12:Subscriber/x12:Address/x12:PostalCode",
+        "target_field": "postal_code",
+        "data_type": "string",
+        "required": true,
+        "validation_rules": ["valid_zip_code"],
+        "pattern": "^\\d{5}(-\\d{4})?$"
+      }
+    },
+    "status_mapping": {
+      "patient_status": {
+        "source_path": "//x12:EligibilityInfo/x12:EligibilityStatusCode",
+        "target_field": "status",
+        "data_type": "enum",
+        "required": true,
+        "transformation": "eligibility_status_mapper",
+        "value_mapping": {
+          "1": "Active",
+          "6": "Churned",
+          "7": "Onboarding",
+          "8": "Inquiry"
+        },
+        "business_rules": {
+          "check_effective_dates": true,
+          "consider_termination_date": true,
+          "urgency_mapping": {
+            "1": "normal",
+            "6": "urgent",
+            "7": "normal",
+            "8": "normal"
+          }
+        }
+      }
+    },
+    "insurance_data": {
+      "member_id": {
+        "source_path": "//x12:Subscriber/x12:MemberIdentification",
+        "target_field": "member_id",
+        "data_type": "string",
+        "required": true,
+        "max_length": 20,
+        "validation_rules": ["alphanumeric"],
+        "index": true
+      },
+      "insurance_company": {
+        "source_path": "//x12:InformationSource/x12:OrganizationName",
+        "target_field": "insurance_company",
+        "data_type": "string",
+        "required": true,
+        "max_length": 100
+      },
+      "payer_id": {
+        "source_path": "//x12:InformationSource/x12:PayerIdentification",
+        "target_field": "payer_id",
+        "data_type": "string",
+        "required": true,
+        "max_length": 10
+      },
+      "group_number": {
+        "source_path": "//x12:Subscriber/x12:GroupNumber",
+        "target_field": "group_number",
+        "data_type": "string",
+        "required": false,
+        "max_length": 20
+      },
+      "plan_description": {
+        "source_path": "//x12:EligibilityInfo/x12:PlanCoverageDescription",
+        "target_field": "plan_description",
+        "data_type": "string",
+        "required": false,
+        "max_length": 100
+      },
+      "effective_date": {
+        "source_path": "//x12:EligibilityInfo/x12:EffectiveDate",
+        "target_field": "coverage_start_date",
+        "data_type": "date",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      },
+      "termination_date": {
+        "source_path": "//x12:EligibilityInfo/x12:TerminationDate",
+        "target_field": "coverage_end_date",
+        "data_type": "date",
+        "required": false,
+        "format": "YYYY-MM-DD"
+      }
+    },
+    "benefits": {
+      "deductible_amount": {
+        "source_path": "//x12:BenefitInfo/x12:DeductibleAmount",
+        "target_field": "deductible",
+        "data_type": "decimal",
+        "required": false,
+        "precision": 2
+      },
+      "copay_amount": {
+        "source_path": "//x12:BenefitInfo/x12:CopayAmount",
+        "target_field": "copay",
+        "data_type": "decimal",
+        "required": false,
+        "precision": 2
+      },
+      "coinsurance_percent": {
+        "source_path": "//x12:BenefitInfo/x12:CoInsurancePercent",
+        "target_field": "coinsurance",
+        "data_type": "decimal",
+        "required": false,
+        "precision": 1,
+        "validation_rules": ["percentage_range"]
+      },
+      "network_indicator": {
+        "source_path": "//x12:BenefitInfo/x12:NetworkIndicator",
+        "target_field": "in_network",
+        "data_type": "boolean",
+        "required": false,
+        "value_mapping": {
+          "Y": true,
+          "N": false
+        }
+      }
+    }
+  },
+  "transformation_functions": {
+    "eligibility_status_mapper": {
+      "function": "map_eligibility_status",
+      "parameters": {
+        "effective_date_field": "coverage_start_date",
+        "termination_date_field": "coverage_end_date",
+        "current_date": "system_date"
+      },
+      "logic": "complex_business_rule"
+    },
+    "birthday_alert_calculator": {
+      "function": "calculate_birthday_proximity",
+      "parameters": {
+        "days_ahead": 7,
+        "include_today": true
+      }
+    }
+  },
+  "validation_rules": {
+    "no_special_chars": {
+      "pattern": "^[a-zA-Z\\s\\-\\']+$",
+      "error_message": "Only letters, spaces, hyphens, and apostrophes allowed"
+    },
+    "valid_date": {
+      "function": "is_valid_date",
+      "error_message": "Invalid date format"
+    },
+    "reasonable_age": {
+      "function": "check_age_range",
+      "parameters": {
+        "min_age": 0,
+        "max_age": 150
+      },
+      "error_message": "Age must be between 0 and 150 years"
+    },
+    "valid_gender_code": {
+      "allowed_values": ["M", "F", "U"],
+      "error_message": "Gender code must be M, F, or U"
+    },
+    "valid_state_code": {
+      "function": "is_valid_us_state",
+      "error_message": "Invalid US state code"
+    },
+    "valid_zip_code": {
+      "pattern": "^\\d{5}(-\\d{4})?$",
+      "error_message": "Invalid ZIP code format"
+    },
+    "percentage_range": {
+      "min_value": 0,
+      "max_value": 100,
+      "error_message": "Percentage must be between 0 and 100"
+    }
+  },
+  "error_handling": {
+    "on_validation_failure": "log_and_continue",
+    "on_missing_required_field": "reject_record",
+    "on_transformation_error": "use_default_value",
+    "dead_letter_queue": {
+      "enabled": true,
+      "max_retries": 3,
+      "retry_delay_seconds": [60, 300, 900]
+    }
+  },
+  "audit_trail": {
+    "track_field_changes": true,
+    "track_source_system": true,
+    "track_transformation_applied": true,
+    "retention_days": 2555
+  },
+  "performance_optimization": {
+    "batch_size": 100,
+    "parallel_processing": true,
+    "max_workers": 4,
+    "cache_transformations": true,
+    "index_frequently_queried_fields": [
+      "member_id",
+      "last_name",
+      "date_of_birth"
+    ]
+  }
+}

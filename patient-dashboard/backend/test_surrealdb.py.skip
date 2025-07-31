@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+import asyncio
+from surrealdb import AsyncSurreal
+import bcrypt
+
+async def test_connection():
+    """Test SurrealDB connection and user creation."""
+    async with AsyncSurreal("ws://localhost:8000/rpc") as db:
+        # Connect and select namespace/database
+        await db.use("patient_dashboard", "patient_dashboard")
+        
+        print("Connected to SurrealDB")
+        
+        # Try a simple query
+        result = await db.query("INFO FOR DB")
+        print(f"INFO FOR DB result: {result}")
+        
+        # Check if user table exists
+        result = await db.query("SELECT * FROM user")
+        print(f"SELECT * FROM user result: {result}")
+        
+        # Create a test user
+        password_hash = bcrypt.hashpw("Test123!".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        result = await db.query("""
+            CREATE user SET
+                email = 'test@example.com',
+                password_hash = $password_hash,
+                first_name = 'Test',
+                last_name = 'User',
+                role = 'ADMIN',
+                is_active = true,
+                created_at = time::now(),
+                updated_at = time::now()
+        """, {"password_hash": password_hash})
+        
+        print(f"CREATE user result: {result}")
+        
+        # Try to select the created user
+        result = await db.query("SELECT * FROM user WHERE email = 'test@example.com'")
+        print(f"SELECT created user result: {result}")
+
+if __name__ == "__main__":
+    asyncio.run(test_connection())

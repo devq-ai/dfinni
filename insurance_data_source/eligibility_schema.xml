@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Updated: 2025-07-27T12:58:15-05:00 -->
+<!-- X12 270/271 Eligibility XML Schema Definition -->
+<!-- Based on ASC X12 Version 005010, Transaction Set 270/271, TR3 ID: 005010X279 -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://x12.org/schemas/005010/270271"
+           xmlns:tns="http://x12.org/schemas/005010/270271"
+           elementFormDefault="qualified">
+
+  <!-- Root element for eligibility response -->
+  <xs:element name="EligibilityResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="TransactionHeader" type="tns:TransactionHeaderType"/>
+        <xs:element name="InformationSource" type="tns:InformationSourceType"/>
+        <xs:element name="InformationReceiver" type="tns:InformationReceiverType"/>
+        <xs:element name="Subscriber" type="tns:SubscriberType"/>
+        <xs:element name="EligibilityInfo" type="tns:EligibilityInfoType"/>
+        <xs:element name="BenefitInfo" type="tns:BenefitInfoType" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="version" type="xs:string" fixed="005010"/>
+      <xs:attribute name="transactionSet" type="xs:string" fixed="271"/>
+    </xs:complexType>
+  </xs:element>
+
+  <!-- Transaction Header (BHT segment) -->
+  <xs:complexType name="TransactionHeaderType">
+    <xs:sequence>
+      <xs:element name="HierarchicalStructureCode" type="xs:string"/>
+      <xs:element name="TransactionSetPurposeCode" type="xs:string"/>
+      <xs:element name="ReferenceIdentification" type="xs:string"/>
+      <xs:element name="Date" type="xs:date"/>
+      <xs:element name="Time" type="xs:time"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Information Source (Payer) -->
+  <xs:complexType name="InformationSourceType">
+    <xs:sequence>
+      <xs:element name="EntityIdentifierCode" type="xs:string"/>
+      <xs:element name="EntityTypeQualifier" type="xs:string"/>
+      <xs:element name="OrganizationName" type="xs:string"/>
+      <xs:element name="PayerIdentification" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Information Receiver (Provider) -->
+  <xs:complexType name="InformationReceiverType">
+    <xs:sequence>
+      <xs:element name="EntityIdentifierCode" type="xs:string"/>
+      <xs:element name="EntityTypeQualifier" type="xs:string"/>
+      <xs:element name="OrganizationName" type="xs:string"/>
+      <xs:element name="ProviderIdentification" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Subscriber Information -->
+  <xs:complexType name="SubscriberType">
+    <xs:sequence>
+      <xs:element name="EntityIdentifierCode" type="xs:string"/>
+      <xs:element name="EntityTypeQualifier" type="xs:string"/>
+      <xs:element name="LastName" type="xs:string"/>
+      <xs:element name="FirstName" type="xs:string"/>
+      <xs:element name="MiddleName" type="xs:string" minOccurs="0"/>
+      <xs:element name="MemberIdentification" type="xs:string"/>
+      <xs:element name="SocialSecurityNumber" type="xs:string" minOccurs="0"/>
+      <xs:element name="DateOfBirth" type="xs:date"/>
+      <xs:element name="Gender" type="xs:string"/>
+      <xs:element name="GroupNumber" type="xs:string" minOccurs="0"/>
+      <xs:element name="Address" type="tns:AddressType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Address Information -->
+  <xs:complexType name="AddressType">
+    <xs:sequence>
+      <xs:element name="AddressLine1" type="xs:string"/>
+      <xs:element name="AddressLine2" type="xs:string" minOccurs="0"/>
+      <xs:element name="City" type="xs:string"/>
+      <xs:element name="State" type="xs:string"/>
+      <xs:element name="PostalCode" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Eligibility Information -->
+  <xs:complexType name="EligibilityInfoType">
+    <xs:sequence>
+      <xs:element name="EligibilityStatusCode" type="xs:string"/>
+      <xs:element name="CoverageLevel" type="xs:string"/>
+      <xs:element name="ServiceType" type="xs:string" minOccurs="0"/>
+      <xs:element name="PlanCoverageDescription" type="xs:string" minOccurs="0"/>
+      <xs:element name="EffectiveDate" type="xs:date" minOccurs="0"/>
+      <xs:element name="TerminationDate" type="xs:date" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- Benefit Information -->
+  <xs:complexType name="BenefitInfoType">
+    <xs:sequence>
+      <xs:element name="BenefitCode" type="xs:string"/>
+      <xs:element name="CoverageLevel" type="xs:string"/>
+      <xs:element name="ServiceType" type="xs:string"/>
+      <xs:element name="BenefitAmount" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="BenefitPercent" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="DeductibleAmount" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="CoInsurancePercent" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="CopayAmount" type="xs:decimal" minOccurs="0"/>
+      <xs:element name="NetworkIndicator" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+</xs:schema>

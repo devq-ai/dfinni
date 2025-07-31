@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Updated: 2025-07-28T04:54:39-05:00 -->
+<EligibilityResponse xmlns="http://x12.org/schemas/005010/270271" version="005010" transactionSet="271">
+  <TransactionHeader>
+    <HierarchicalStructureCode>0022</HierarchicalStructureCode>
+    <TransactionSetPurposeCode>11</TransactionSetPurposeCode>
+    <ReferenceIdentification>ELG0183878</ReferenceIdentification>
+    <Date>2025-07-28</Date>
+    <Time>09:15:00</Time>
+  </TransactionHeader>
+  <InformationSource>
+    <EntityIdentifierCode>PR</EntityIdentifierCode>
+    <EntityTypeQualifier>2</EntityTypeQualifier>
+    <OrganizationName>United Healthcare</OrganizationName>
+    <PayerIdentification>87726</PayerIdentification>
+  </InformationSource>
+  <InformationReceiver>
+    <EntityIdentifierCode>1P</EntityIdentifierCode>
+    <EntityTypeQualifier>2</EntityTypeQualifier>
+    <OrganizationName>Memorial Healthcare Center</OrganizationName>
+    <ProviderIdentification>1234567890</ProviderIdentification>
+  </InformationReceiver>
+  <Subscriber>
+    <EntityIdentifierCode>IL</EntityIdentifierCode>
+    <EntityTypeQualifier>1</EntityTypeQualifier>
+    <LastName>Martin</LastName>
+    <FirstName>Susan</FirstName>
+    <MiddleName></MiddleName>
+    <MemberIdentification>CIG103456789</MemberIdentification>
+    <SocialSecurityNumber>620-87-3865</SocialSecurityNumber>
+    <DateOfBirth>1973-05-22</DateOfBirth>
+    <Gender>F</Gender>
+    <Address>
+      <AddressLine>123 Main St</AddressLine>
+      <City>San Francisco</City>
+      <State>CA</State>
+      <PostalCode>94102</PostalCode>
+    </Address>
+  </Subscriber>
+  <EligibilityInfo>
+    <EligibilityCode>1</EligibilityCode>
+    <PlanType>PPO</PlanType>
+    <CoverageLevelCode>EMP</CoverageLevelCode>
+    <ServiceTypeCode>30</ServiceTypeCode>
+    <PlanCoverageDescription>PPO Standard Plan</PlanCoverageDescription>
+    <EffectiveDate>2025-04-24</EffectiveDate>
+    <TerminationDate></TerminationDate>
+  </EligibilityInfo>
+  <BenefitInfo>
+    <CoverageLevel>IND</CoverageLevel>
+    <ServiceTypeCode>30</ServiceTypeCode>
+    <BenefitType>ActiveCoverage</BenefitType>
+    <DeductibleAmount>1500.00</DeductibleAmount>
+    <CopayAmount>25.00</CopayAmount>
+    <CoInsurancePercent>80</CoInsurancePercent>
+    <NetworkIndicator>Y</NetworkIndicator>
+  </BenefitInfo>
+</EligibilityResponse>

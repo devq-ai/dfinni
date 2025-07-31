@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Updated: 2025-07-27T12:58:15-05:00 -->
+<EligibilityResponse xmlns="http://x12.org/schemas/005010/270271" version="005010" transactionSet="271">
+  <TransactionHeader>
+    <HierarchicalStructureCode>0022</HierarchicalStructureCode>
+    <TransactionSetPurposeCode>11</TransactionSetPurposeCode>
+    <ReferenceIdentification>ELG000000007</ReferenceIdentification>
+    <Date>2025-07-25</Date>
+    <Time>10:17:00</Time>
+  </TransactionHeader>
+  <InformationSource>
+    <EntityIdentifierCode>PR</EntityIdentifierCode>
+    <EntityTypeQualifier>2</EntityTypeQualifier>
+    <OrganizationName>Anthem BCBS</OrganizationName>
+    <PayerIdentification>47518</PayerIdentification>
+  </InformationSource>
+  <InformationReceiver>
+    <EntityIdentifierCode>1P</EntityIdentifierCode>
+    <EntityTypeQualifier>2</EntityTypeQualifier>
+    <OrganizationName>Memorial Healthcare Center</OrganizationName>
+    <ProviderIdentification>1234567890</ProviderIdentification>
+  </InformationReceiver>
+  <Subscriber>
+    <EntityIdentifierCode>IL</EntityIdentifierCode>
+    <EntityTypeQualifier>1</EntityTypeQualifier>
+    <LastName>Miller</LastName>
+    <FirstName>Jessica</FirstName>
+    <MiddleName>Ann</MiddleName>
+    <MemberIdentification>ANT475987654</MemberIdentification>
+    <SocialSecurityNumber>789-01-2345</SocialSecurityNumber>
+    <DateOfBirth>1995-02-03</DateOfBirth>
+    <Gender>F</Gender>
+    <GroupNumber>GRP007</GroupNumber>
+    <Address>
+      <AddressLine1>404 Willow Circle</AddressLine1>
+      <AddressLine2>Apt 12</AddressLine2>
+      <City>El Paso</City>
+      <State>TX</State>
+      <PostalCode>79901</PostalCode>
+    </Address>
+  </Subscriber>
+  <EligibilityInfo>
+    <EligibilityStatusCode>1</EligibilityStatusCode>
+    <CoverageLevel>IND</CoverageLevel>
+    <ServiceType>30</ServiceType>
+    <PlanCoverageDescription>PPO Health Plan</PlanCoverageDescription>
+    <EffectiveDate>2025-01-01</EffectiveDate>
+    <TerminationDate>2025-12-31</TerminationDate>
+  </EligibilityInfo>
+  <BenefitInfo>
+    <BenefitCode>1</BenefitCode>
+    <CoverageLevel>IND</CoverageLevel>
+    <ServiceType>30</ServiceType>
+    <BenefitAmount>5000.00</BenefitAmount>
+    <DeductibleAmount>2000.00</DeductibleAmount>
+    <CoInsurancePercent>25</CoInsurancePercent>
+    <CopayAmount>30.00</CopayAmount>
+    <NetworkIndicator>Y</NetworkIndicator>
+  </BenefitInfo>
+</EligibilityResponse>
