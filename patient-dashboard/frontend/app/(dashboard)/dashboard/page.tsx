@@ -4,6 +4,17 @@ import { useState, useEffect } from 'react'
 import { patientsApi } from '@/lib/api/patients'
 import { alertsApi } from '@/lib/api/alerts'
 import Link from 'next/link'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { 
+  Users, 
+  AlertCircle, 
+  Activity, 
+  Calendar,
+  ArrowUpRight,
+  ArrowDownRight,
+  TrendingUp
+} from 'lucide-react'
 
 export default function DashboardPage() {
   const [stats, setStats] = useState([
@@ -46,57 +57,79 @@ export default function DashboardPage() {
     }
   }
 
-  const StatCard = ({ stat }: { stat: any }) => {
-    const content = (
-      <div className="bg-white overflow-hidden shadow rounded-lg hover:shadow-md transition-shadow">
-        <div className="p-5">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className={`rounded-md ${stat.color} p-3`}>
-                <div className="h-6 w-6 text-white" />
-              </div>
-            </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  {stat.name}
-                </dt>
-                <dd className="text-2xl font-semibold text-gray-900">
-                  {loading ? '...' : stat.value}
-                </dd>
-              </dl>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-
-    if (stat.link) {
-      return <Link href={stat.link}>{content}</Link>
+  const getStatIcon = (name: string) => {
+    switch (name) {
+      case 'Total Patients':
+        return <Users className="h-4 w-4" />
+      case 'Active Alerts':
+        return <AlertCircle className="h-4 w-4" />
+      case 'High Risk Patients':
+        return <Activity className="h-4 w-4" />
+      case 'Active Patients':
+        return <Calendar className="h-4 w-4" />
+      default:
+        return <TrendingUp className="h-4 w-4" />
     }
-    return content
+  }
+
+  const getStatTrend = (name: string) => {
+    // Mock trend data - in real app, this would come from API
+    const trends = {
+      'Total Patients': { value: '+12.5%', isUp: true },
+      'Active Alerts': { value: '-8.2%', isUp: false },
+      'High Risk Patients': { value: '+3.1%', isUp: true },
+      'Active Patients': { value: '+5.4%', isUp: true },
+    }
+    return trends[name as keyof typeof trends] || { value: '0%', isUp: true }
   }
 
   return (
-    <div className="py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">Welcome back! Here's an overview of your patients.</p>
       </div>
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {stats.map((stat) => (
-            <StatCard key={stat.name} stat={stat} />
-          ))}
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const trend = getStatTrend(stat.name)
+          return (
+            <Card key={stat.name}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.name}
+                </CardTitle>
+                {getStatIcon(stat.name)}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loading ? '...' : stat.value}
+                </div>
+                <p className="text-xs text-muted-foreground flex items-center mt-1">
+                  {trend.isUp ? (
+                    <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
+                  ) : (
+                    <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
+                  )}
+                  <span className={trend.isUp ? 'text-green-600' : 'text-red-600'}>
+                    {trend.value}
+                  </span>
+                  <span className="ml-1">from last month</span>
+                </p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
 
-        {/* Recent Alerts */}
-        <div className="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Recent Alerts
-              </h3>
+      {/* Recent Alerts and System Status */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Alerts</CardTitle>
+            <CardDescription>Latest patient alerts requiring attention</CardDescription>
+          </CardHeader>
+          <CardContent>
               <div className="mt-5">
                 {loading ? (
                   <div className="text-center py-4">
@@ -108,7 +141,7 @@ export default function DashboardPage() {
                       <Link
                         key={alert.id}
                         href="/alerts"
-                        className="block hover:bg-gray-50 -mx-2 px-2 py-2 rounded"
+                        className="block hover:bg-accent rounded-md -mx-2 px-2 py-2 transition-colors"
                       >
                         <div className="flex items-start space-x-3">
                           <div className={`flex-shrink-0 w-2 h-2 rounded-full mt-2 ${
@@ -130,75 +163,74 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 text-center py-4">No active alerts</p>
+                  <p className="text-sm text-muted-foreground text-center py-4">No active alerts</p>
                 )}
               </div>
               <div className="mt-6">
-                <Link
-                  href="/alerts"
-                  className="w-full flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                >
-                  View all alerts
-                </Link>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/alerts">
+                    View all alerts
+                  </Link>
+                </Button>
               </div>
-            </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* System Status */}
-          <div className="bg-white shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                System Status
-              </h3>
+        {/* System Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>System Status</CardTitle>
+            <CardDescription>Current operational status of all services</CardDescription>
+          </CardHeader>
+          <CardContent>
               <div className="mt-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">API Server</span>
+                  <span className="text-sm text-muted-foreground">API Server</span>
                   <span className="flex items-center text-sm">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                    <span className="text-green-600">Operational</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span className="text-green-500">Operational</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Database</span>
+                  <span className="text-sm text-muted-foreground">Database</span>
                   <span className="flex items-center text-sm">
-                    <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                    <span className="text-green-600">Connected</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span className="text-green-500">Connected</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">WebSocket</span>
+                  <span className="text-sm text-muted-foreground">WebSocket</span>
                   <span className="flex items-center text-sm">
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full mr-2"></div>
-                    <span className="text-yellow-600">Pending</span>
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                    <span className="text-yellow-500">Pending</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Logfire</span>
+                  <span className="text-sm text-muted-foreground">Logfire</span>
                   <span className="flex items-center text-sm">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full mr-2"></div>
-                    <span className="text-gray-600">Disabled</span>
+                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                    <span className="text-green-500">Enabled</span>
                   </span>
                 </div>
               </div>
               <div className="mt-6">
-                <div className="rounded-md bg-blue-50 p-4">
+                <div className="rounded-md bg-blue-500/10 p-4 border border-blue-500/20">
                   <div className="flex">
                     <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <svg className="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm text-blue-800">
+                      <p className="text-sm text-blue-400">
                         Frontend rebuilt with stable architecture. All features operational.
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

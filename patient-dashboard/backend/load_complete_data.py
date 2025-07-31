@@ -233,7 +233,7 @@ async def load_data():
         
         # 3. Load all patient data
         print("\n3. Loading patient data from XML files...")
-        data_dir = Path("/Users/dionedge/devqai/pfinni/insurance_data_source")
+        data_dir = Path("/Users/dionedge/devqai/pfinni_dashboard/insurance_data_source")
         xml_files = sorted(list(data_dir.glob("patient_*.xml")))
         print(f"   Found {len(xml_files)} patient XML files")
         

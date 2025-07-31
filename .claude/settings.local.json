@@ -1,21 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash",
-      "Read", 
-      "Edit",
-      "Write",
-      "WebFetch",
-      "Grep",
-      "Glob",
-      "LS",
-      "MultiEdit",
-      "NotebookRead",
-      "NotebookEdit", 
-      "TodoRead",
-      "TodoWrite",
-      "WebSearch"
-    ]
+      "Bash(python:*)"
+    ],
+    "deny": []
   },
   "tab_size": 2,
   "theme": "One Dark",
@@ -233,7 +221,7 @@
       "DEVQAI_ROOT": "/Users/dionedge/devqai",
       "PYTEST_ARGS": "tests/ --cov=src/ --cov-report=html --cov-fail-under=90",
       "FASTAPI_CMD": "uvicorn main:app --reload --host 0.0.0.0 --port 8000",
-      "LOGFIRE_CHECK": "python -c \"import logfire; print('\u2705 Logfire available')\"",
+      "LOGFIRE_CHECK": "python -c \"import logfire; print('✅ Logfire available')\"",
       "TASKMASTER_CHECK": "npx task-master-ai --version"
     }
   },
