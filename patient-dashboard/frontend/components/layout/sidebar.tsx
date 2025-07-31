@@ -1,3 +1,4 @@
+// Updated: 2025-07-31T14:05:00-06:00
 "use client"
 
 import Link from "next/link"
@@ -51,11 +52,11 @@ export function Sidebar() {
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col border-r bg-background transition-all duration-300",
+        "relative flex h-full flex-col border-r border-border bg-sidebar transition-all duration-300 dark:bg-[#141414] dark:border-[#3e3e3e]",
         isCollapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="flex h-16 items-center justify-between border-b px-4">
+      <div className="flex h-16 items-center justify-between border-b border-border px-4 dark:border-[#3e3e3e]">
         {!isCollapsed && (
           <Link href="/dashboard" className="flex items-center space-x-2">
             <span className="text-xl font-bold">PFINNI</span>

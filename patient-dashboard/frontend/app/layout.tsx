@@ -1,3 +1,4 @@
+// Updated: 2025-07-31T12:42:00-06:00
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";

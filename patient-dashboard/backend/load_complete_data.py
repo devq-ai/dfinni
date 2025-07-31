@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Updated: 2025-07-31T13:20:00-06:00
 """Load complete data including all 20 patients, users, and generate alerts"""
 
 import asyncio
@@ -62,7 +63,7 @@ def parse_patient_xml(file_path):
     # Extract address
     address_elem = subscriber.find('.//x12:Address', ns)
     if address_elem is not None:
-        street = address_elem.find('x12:AddressLine', ns)
+        street = address_elem.find('x12:AddressLine1', ns)  # Fixed: AddressLine1 instead of AddressLine
         city = address_elem.find('x12:City', ns)
         state = address_elem.find('x12:State', ns)
         zip_code = address_elem.find('x12:PostalCode', ns)
@@ -80,9 +81,9 @@ def parse_patient_xml(file_path):
     # Extract insurance info
     eligibility = root.find('.//x12:EligibilityInfo', ns)
     if eligibility is not None:
-        plan_type = eligibility.find('x12:PlanType', ns)
+        plan_type = eligibility.find('x12:PlanCoverageDescription', ns)  # Fixed: PlanCoverageDescription instead of PlanType
         effective_date = eligibility.find('x12:EffectiveDate', ns)
-        eligibility_code = eligibility.find('x12:EligibilityCode', ns)
+        eligibility_code = eligibility.find('x12:EligibilityStatusCode', ns)  # Fixed: EligibilityStatusCode instead of EligibilityCode
         
         plan_type = plan_type.text if plan_type is not None else "PPO"
         effective_date = effective_date.text if effective_date is not None else "2024-01-01"

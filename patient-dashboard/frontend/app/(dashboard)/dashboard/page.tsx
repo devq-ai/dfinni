@@ -1,3 +1,4 @@
+// Updated: 2025-07-31T12:42:00-06:00
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -94,7 +95,7 @@ export default function DashboardPage() {
         {stats.map((stat) => {
           const trend = getStatTrend(stat.name)
           return (
-            <Card key={stat.name}>
+            <Card key={stat.name} className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.name}
@@ -124,7 +125,7 @@ export default function DashboardPage() {
 
       {/* Recent Alerts and System Status */}
       <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e]">
           <CardHeader>
             <CardTitle>Recent Alerts</CardTitle>
             <CardDescription>Latest patient alerts requiring attention</CardDescription>
@@ -151,7 +152,7 @@ export default function DashboardPage() {
                             'bg-blue-500'
                           }`} />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium text-gray-100 truncate">
                               {alert.title}
                             </p>
                             <p className="text-sm text-gray-500 truncate">
@@ -177,7 +178,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* System Status */}
-        <Card>
+        <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e]">
           <CardHeader>
             <CardTitle>System Status</CardTitle>
             <CardDescription>Current operational status of all services</CardDescription>
