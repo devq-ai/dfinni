@@ -23,10 +23,14 @@ def configure_logging() -> None:
             os.environ['LOGFIRE_TOKEN'] = token
             
         # Configure with explicit settings
+        # Force correct project name
+        os.environ['LOGFIRE_PROJECT_NAME'] = 'pfinni'
+        
         logfire.configure(
             token=token,
             service_name='pfinni-backend',
-            service_version='1.0.0'
+            service_version='1.0.0',
+            console=False  # Disable console output to reduce noise
         )
         
         # Send startup log
