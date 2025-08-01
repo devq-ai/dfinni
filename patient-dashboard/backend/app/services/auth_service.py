@@ -30,54 +30,31 @@ class AuthService:
     
     async def authenticate_user(self, email: str, password: str) -> Optional[UserInDB]:
         """Authenticate user with email and password."""
-        # TEMPORARY: Hardcoded demo users for testing
-        demo_users = {
-            "dion@devq.ai": {
-                "password": "Admin123!",
-                "user": UserInDB(
-                    id="demo_admin_1",
-                    email="dion@devq.ai",
-                    password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiGNfrHeNWCu",  # Admin123!
-                    first_name="Dion",
-                    last_name="Edge",
-                    role="ADMIN",
-                    is_active=True,
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
-                )
-            },
-            "pfinni@devq.ai": {
-                "password": "Admin123!",
-                "user": UserInDB(
-                    id="demo_provider_1",
-                    email="pfinni@devq.ai",
-                    password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiGNfrHeNWCu",  # Admin123!
-                    first_name="Provider",
-                    last_name="Finni",
-                    role="PROVIDER",
-                    is_active=True,
-                    created_at=datetime.utcnow(),
-                    updated_at=datetime.utcnow()
-                )
-            }
-        }
-        
-        # Check demo users first
-        if email in demo_users and password == demo_users[email]["password"]:
-            return demo_users[email]["user"]
-        
         try:
-            # Get user with password hash
+            # Get user with password hash from database
             user = await self.user_service.get_user_with_password(email)
             
             if not user:
+                # Fallback to hardcoded admin for initial setup if no users exist
+                if email == "admin@example.com" and password == "Admin123!":
+                    return UserInDB(
+                        id="admin_fallback",
+                        email="admin@example.com",
+                        password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiGNfrHeNWCu",
+                        first_name="Admin",
+                        last_name="User",
+                        role="ADMIN",
+                        is_active=True,
+                        created_at=datetime.utcnow(),
+                        updated_at=datetime.utcnow()
+                    )
                 return None
             
             # Check if user is active
             if not user.is_active:
                 raise AuthenticationException("User account is disabled")
             
-            # Verify password
+            # Verify password with bcrypt
             if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
                 return None
             

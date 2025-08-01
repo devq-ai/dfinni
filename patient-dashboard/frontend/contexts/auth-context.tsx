@@ -24,7 +24,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const token = localStorage.getItem('auth-token')
         if (token) {
           // Verify token with backend
-          const response = await fetch(`${API_BASE_URL}/auth/me`, {
+          const response = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logger.info('Login attempt', { email })
       
       // Call BetterAuth API
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
       // Get user data
-      const userResponse = await fetch(`${API_BASE_URL}/auth/me`, {
+      const userResponse = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
         headers: {
           'Authorization': `Bearer ${data.access_token}`
         }
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const token = localStorage.getItem('auth-token')
       if (token) {
         // Call logout endpoint
-        await fetch(`${API_BASE_URL}/auth/logout`, {
+        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`

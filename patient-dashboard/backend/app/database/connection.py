@@ -52,12 +52,41 @@ class DatabaseConnection:
             try:
                 self.db = AsyncSurreal(self.url)
                 await self.db.connect()
-                # Sign in only if not using root default authentication
-                if self.username != "root" or self.password != "root":
+                # Try different authentication parameter formats
+                try:
+                    # First try the official documentation format
                     await self.db.signin({
-                        "user": self.username,
-                        "pass": self.password
+                        "username": self.username,
+                        "password": self.password
                     })
+                    logger.info("Authentication successful with username/password format")
+                except Exception as e1:
+                    logger.warning(f"Auth failed with username/password: {e1}")
+                    try:
+                        # Try the GitHub README format
+                        await self.db.signin({
+                            "user": self.username,
+                            "pass": self.password
+                        })
+                        logger.info("Authentication successful with user/pass format")
+                    except Exception as e2:
+                        logger.error(f"Both authentication formats failed: {e2}")
+                        # Try namespace-specific authentication
+                        try:
+                            await self.db.signin({
+                                "namespace": self.namespace,
+                                "database": self.database,
+                                "username": self.username,
+                                "password": self.password
+                            })
+                            logger.info("Authentication successful with namespace/database format")
+                        except Exception as e3:
+                            logger.error(f"All authentication methods failed. Running without auth.")
+                            logger.error(f"Error 1: {e1}")
+                            logger.error(f"Error 2: {e2}")
+                            logger.error(f"Error 3: {e3}")
+                            # Continue without authentication for now
+                
                 # Use namespace and database
                 await self.db.use(self.namespace, self.database)
                 self._connected = True

@@ -1,5 +1,5 @@
-<!-- Updated: 2025-08-01T01:05:00-06:00 -->
-### Patient Dashboard Design System Style Guide
+<!-- Updated: 2025-07-27T12:58:15-05:00 -->
+### Cyber & Pastel Design System Style Guide
 
 A comprehensive design system featuring two distinctive palettes with modern typography for digital interfaces.
 
@@ -423,31 +423,6 @@ Perfect for: Mobile apps, productivity tools, wellness apps, modern websites, pr
 - Scale typography appropriately for different screen sizes
 - Adjust contrast for different viewing environments
 - Test on various devices and browsers
-
----
-
-### Patient Dashboard Dark Theme (Added August 1, 2025)
-
-#### Requested Dark Theme Colors
-User specifically requested these colors for the dark theme:
-- Background: `#0f0f0f` (darkest)
-- Card/Surface: `#141414`
-- Secondary/Borders: `#3e3e3e`
-
-#### Implementation in Tailwind CSS v4
-```css
-/* In globals.css */
-.dark {
-  --background: 0 0% 5.9%;      /* #0f0f0f */
-  --card: 0 0% 7.8%;            /* #141414 */
-  --secondary: 0 0% 24.3%;      /* #3e3e3e */
-}
-```
-
-#### Important Notes
-- Must use HSL format for CSS variables in Tailwind v4
-- OKLCH color notation not supported
-- Use explicit hex values as fallback when needed
 
 ---
 

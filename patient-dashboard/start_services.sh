@@ -21,7 +21,7 @@ fi
 # Start Backend API
 echo "2. Starting Backend API on port 8001..."
 cd backend
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload > /tmp/backend.log 2>&1 &
+python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload > /tmp/backend.log 2>&1 &
 cd ..
 sleep 3
 

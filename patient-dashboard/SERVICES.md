@@ -13,9 +13,18 @@ This file contains all service configurations for the Patient Dashboard applicat
 - **Status Check:** `curl http://localhost:8000/health`
 - **Start Command:** 
   ```bash
+  # File-based storage (RECOMMENDED for persistence)
+  surreal start --user root --pass root --bind 0.0.0.0:8000 file:/Users/dionedge/devqai/pfinni_dashboard/patient-dashboard/data/pfinni.db
+  
+  # Memory storage (data lost on restart)
   surreal start --user root --pass root --bind 0.0.0.0:8000 memory
+  
+  # No authentication (CURRENT WORKAROUND - see AUTHENTICATION_FIX.md)
+  surreal start --bind 0.0.0.0:8000 file:/Users/dionedge/devqai/pfinni_dashboard/patient-dashboard/data/pfinni.db
   ```
 - **Stop Command:** `pkill surreal`
+- **Data Directory:** `/Users/dionedge/devqai/pfinni_dashboard/patient-dashboard/data/pfinni.db`
+- **Known Issues:** Python SurrealDB client authentication incompatible with root user signin
 
 ### 2. Backend API (FastAPI)
 - **Host:** localhost
