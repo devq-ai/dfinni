@@ -1,6 +1,8 @@
 /* Updated: 2025-07-31T14:00:00-06:00 - Color update */
 @import "tailwindcss";
 @import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -46,6 +48,38 @@
 
 :root {
   --radius: 0.625rem;
+  
+  /* Cyber Black Palette */
+  --cyber-void-black: #000000;
+  --cyber-carbon-black: #0a0a0a;
+  --cyber-gray: #1a1a1a;
+  --cyber-white: #ffffff;
+  --cyber-matrix-green: #00ff00;
+  --cyber-neon-pink: #ff0080;
+  --cyber-electric-cyan: #00ffff;
+  --cyber-laser-yellow: #ffff00;
+  
+  /* Font Stacks */
+  --font-ui: 'Inter', 'Inter Nerd Font', 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'Space Mono', 'Space Mono Nerd Font', 'JetBrains Mono', monospace;
+  
+  /* Font Weights */
+  --font-light: 300;
+  --font-regular: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* Font Sizes */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -80,37 +114,38 @@
 }
 
 .dark {
-  --background: 0 0% 5.9%;
-  --foreground: 0 0% 95%;
-  --card: 0 0% 7.8%;
-  --card-foreground: 0 0% 95%;
-  --popover: 0 0% 7.8%;
-  --popover-foreground: 0 0% 95%;
-  --primary: 0 0% 90%;
-  --primary-foreground: 0 0% 20%;
-  --secondary: 0 0% 24.3%;
-  --secondary-foreground: 0 0% 95%;
-  --muted: 0 0% 24.3%;
+  /* Using Cyber Black Palette */
+  --background: 0 0% 0%;  /* void black */
+  --foreground: 0 0% 100%; /* pure white */
+  --card: 0 0% 4%;  /* carbon black */
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 10%;  /* cyber gray */
+  --popover-foreground: 0 0% 100%;
+  --primary: 180 100% 50%;  /* electric cyan */
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 10%;  /* cyber gray */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 10%;
   --muted-foreground: 0 0% 70%;
-  --accent: 0 0% 24.3%;
-  --accent-foreground: 0 0% 95%;
-  --destructive: 0 60% 50%;
-  --border: 0 0% 14.9%;
-  --input: 0 0% 14.9%;
-  --ring: 0 0% 83.1%;
-  --chart-1: 220 70% 50%;
-  --chart-2: 160 60% 45%;
-  --chart-3: 30 80% 55%;
-  --chart-4: 280 65% 60%;
-  --chart-5: 340 75% 55%;
-  --sidebar: 0 0% 7.8%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-primary: 220 70% 50%;
-  --sidebar-primary-foreground: 0 0% 95%;
-  --sidebar-accent: 0 0% 24.3%;
-  --sidebar-accent-foreground: 0 0% 95%;
-  --sidebar-border: 0 0% 14.9%;
-  --sidebar-ring: 0 0% 83.1%;
+  --accent: 180 100% 50%;  /* electric cyan */
+  --accent-foreground: 0 0% 0%;
+  --destructive: 336 100% 50%;  /* neon pink */
+  --border: 0 0% 10%;  /* cyber gray */
+  --input: 0 0% 10%;
+  --ring: 180 100% 50%;  /* electric cyan */
+  --chart-1: 120 100% 50%;  /* matrix green */
+  --chart-2: 180 100% 50%;  /* electric cyan */
+  --chart-3: 60 100% 50%;  /* laser yellow */
+  --chart-4: 336 100% 50%;  /* neon pink */
+  --chart-5: 270 100% 50%;
+  --sidebar: 0 0% 4%;  /* carbon black */
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-primary: 180 100% 50%;  /* electric cyan */
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 0 0% 10%;  /* cyber gray */
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 10%;
+  --sidebar-ring: 180 100% 50%;
 }
 
 @layer base {
@@ -119,11 +154,35 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-ui);
+    font-weight: var(--font-regular);
+    font-size: var(--text-base);
   }
   
   /* Ensure dark mode colors are applied */
   .dark body {
-    background-color: hsl(0 0% 5.9%);
-    color: hsl(0 0% 95%);
+    background-color: var(--cyber-void-black);
+    color: var(--cyber-white);
   }
+  
+  /* Typography classes */
+  .font-ui { font-family: var(--font-ui); }
+  .font-mono { font-family: var(--font-mono); }
+  
+  /* Font weights */
+  .font-light { font-weight: var(--font-light); }
+  .font-regular { font-weight: var(--font-regular); }
+  .font-medium { font-weight: var(--font-medium); }
+  .font-semibold { font-weight: var(--font-semibold); }
+  .font-bold { font-weight: var(--font-bold); }
+  
+  /* Font sizes */
+  .text-xs { font-size: var(--text-xs); }
+  .text-sm { font-size: var(--text-sm); }
+  .text-base { font-size: var(--text-base); }
+  .text-lg { font-size: var(--text-lg); }
+  .text-xl { font-size: var(--text-xl); }
+  .text-2xl { font-size: var(--text-2xl); }
+  .text-3xl { font-size: var(--text-3xl); }
+  .text-4xl { font-size: var(--text-4xl); }
 }
