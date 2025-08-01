@@ -32,6 +32,9 @@ class AuthService:
     async def authenticate_user(self, email: str, password: str) -> Optional[UserInDB]:
         """Authenticate user with email and password."""
         try:
+            # Normalize email to lowercase for consistent authentication
+            email = email.lower()
+            
             # Get user with password hash from database
             with logfire.span("get_user_for_auth", email=email):
                 user = await self.user_service.get_user_with_password(email)
