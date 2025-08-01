@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import jwt
 import bcrypt
 import secrets
+import logfire
 
 from app.models.user import UserResponse, UserInDB
 from app.services.user_service import UserService
@@ -32,30 +33,25 @@ class AuthService:
         """Authenticate user with email and password."""
         try:
             # Get user with password hash from database
-            user = await self.user_service.get_user_with_password(email)
+            with logfire.span("get_user_for_auth", email=email):
+                user = await self.user_service.get_user_with_password(email)
+                logfire.info("User lookup result", user_found=user is not None)
             
             if not user:
-                # Fallback to hardcoded admin for initial setup if no users exist
-                if email == "admin@example.com" and password == "Admin123!":
-                    return UserInDB(
-                        id="admin_fallback",
-                        email="admin@example.com",
-                        password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewKyNiGNfrHeNWCu",
-                        first_name="Admin",
-                        last_name="User",
-                        role="ADMIN",
-                        is_active=True,
-                        created_at=datetime.utcnow(),
-                        updated_at=datetime.utcnow()
-                    )
+                logfire.info("User not found", email=email)
                 return None
             
             # Check if user is active
             if not user.is_active:
+                logfire.warning("Inactive user attempted login", email=email)
                 raise AuthenticationException("User account is disabled")
             
             # Verify password with bcrypt
-            if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
+            with logfire.span("verify_password"):
+                password_valid = bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8'))
+                logfire.info("Password verification", valid=password_valid)
+            
+            if not password_valid:
                 return None
             
             return user
@@ -63,6 +59,7 @@ class AuthService:
         except AuthenticationException:
             raise
         except Exception as e:
+            logfire.error("Authentication error", error=str(e), email=email)
             raise AuthenticationException(f"Authentication failed: {str(e)}")
     
     def create_access_token(self, user: UserInDB) -> str:
@@ -141,10 +138,10 @@ class AuthService:
                 {"id": user_id}
             )
             
-            if not result or not result[0].get('result'):
+            if not result or len(result) == 0:
                 return False
             
-            password_hash = result[0]['result'][0]['password_hash']
+            password_hash = result[0]['password_hash']
             
             return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
             

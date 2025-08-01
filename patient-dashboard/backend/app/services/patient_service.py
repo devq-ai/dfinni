@@ -252,7 +252,16 @@ class PatientService:
             count_result = await db.execute(count_query, params)
             safe_logfire_info("Count query result", result=count_result)
             
-            total = count_result[0]['result'][0]['total'] if count_result and count_result[0].get('result') else 0
+            total = 0
+            if count_result and len(count_result) > 0:
+                if isinstance(count_result[0], dict) and 'total' in count_result[0]:
+                    # Direct result format
+                    total = count_result[0]['total']
+                elif count_result[0].get('result') and len(count_result[0]['result']) > 0:
+                    # Nested result format
+                    total = count_result[0]['result'][0].get('total', 0)
+            
+            safe_logfire_info("Total patients count", total=total)
             
             # Get patients with pagination
             query = f"""
@@ -263,12 +272,59 @@ class PatientService:
                 START {offset}
             """
             
+            safe_logfire_info("Executing patient query", query=query, params=params)
             result = await db.execute(query, params)
+            safe_logfire_info("Patient query result", result_count=len(result) if result else 0)
             
             patients = []
-            if result and result[0].get('result'):
-                for patient_data in result[0]['result']:
-                    patients.append(PatientResponse.from_db(patient_data))
+            if result and len(result) > 0:
+                # Results come as a direct list of patient dictionaries
+                for patient_data in result:
+                    if isinstance(patient_data, dict) and 'id' in patient_data:
+                        try:
+                            # Convert the data to match expected format
+                            # Fix address zip_code field
+                            if 'address' in patient_data and 'zip' in patient_data['address']:
+                                patient_data['address']['zip_code'] = patient_data['address'].pop('zip')
+                            
+                            # Map status to PatientStatus enum
+                            if patient_data.get('status') == 'active':
+                                patient_data['status'] = 'Active'
+                            elif patient_data.get('status') == 'inactive':
+                                patient_data['status'] = 'Churned'
+                            else:
+                                patient_data['status'] = 'Active'  # Default
+                            
+                            # Add missing risk_level based on risk_score
+                            risk_score = patient_data.get('risk_score', 0)
+                            if risk_score >= 7:
+                                patient_data['risk_level'] = 'High'
+                            elif risk_score >= 4:
+                                patient_data['risk_level'] = 'Medium'
+                            else:
+                                patient_data['risk_level'] = 'Low'
+                            
+                            # Fix insurance fields to match expected structure
+                            if 'insurance' in patient_data:
+                                ins = patient_data['insurance']
+                                patient_data['insurance'] = {
+                                    'member_id': ins.get('member_id', ''),
+                                    'company': ins.get('provider', ins.get('company', '')),
+                                    'plan_type': ins.get('plan_type', ''),
+                                    'group_number': ins.get('group_number', ''),
+                                    'effective_date': '2025-01-01',  # Default since not in data
+                                    'termination_date': None
+                                }
+                            
+                            # Convert RecordID to string
+                            if hasattr(patient_data['id'], 'id'):
+                                patient_data['id'] = str(patient_data['id'].id)
+                            else:
+                                patient_data['id'] = str(patient_data['id'])
+                            
+                            patients.append(PatientResponse.from_db(patient_data))
+                        except Exception as e:
+                            safe_logfire_error("Error processing patient", error=str(e), patient_id=patient_data.get('id', 'unknown'))
             
             # Calculate pagination info
             total_pages = (total + limit - 1) // limit

@@ -24,6 +24,8 @@ router = APIRouter()
 patient_service = PatientService()
 
 
+
+
 @router.post("/", response_model=PatientResponse)
 async def create_patient(
     patient_data: PatientCreate,

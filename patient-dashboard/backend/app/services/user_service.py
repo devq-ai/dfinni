@@ -4,6 +4,7 @@ User service for managing user operations.
 from typing import Optional, List
 from datetime import datetime
 import bcrypt
+import logfire
 
 from app.models.user import (
     UserCreate, UserUpdate, UserInDB, UserResponse,
@@ -40,7 +41,7 @@ class UserService:
                 {"email": user_create.email}
             )
             
-            if existing and existing[0].get('result'):
+            if existing and len(existing) > 0:
                 raise ConflictException(f"User with email {user_create.email} already exists")
             
             # Hash password
@@ -69,20 +70,21 @@ class UserService:
                 "is_active": user_create.is_active
             })
             
-            print(f"Create user query result: {result}")
+            logfire.info("Create user query executed", result_count=len(result) if result else 0)
             
             if not result or not result[0]:
                 raise DatabaseException("Failed to create user")
             
-            user_data = result[0].get('result', [{}])[0] if result else {}
+            user_data = result[0] if result and len(result) > 0 else {}
             
             if not user_data:
                 raise DatabaseException("Failed to create user - no result returned")
             
-            # Ensure 'id' field exists
-            if 'id' not in user_data and 'result' in result[0]:
-                # Try to extract from result
-                user_data = result[0]['result'][0] if result[0]['result'] else {}
+            # Convert RecordID to string
+            if hasattr(user_data.get('id'), 'id'):
+                user_data['id'] = str(user_data['id'].id)
+            else:
+                user_data['id'] = str(user_data['id'])
             
             # Log user creation
             audit_logger.log_access(
@@ -112,10 +114,15 @@ class UserService:
                 {"id": user_id}
             )
             
-            if not result or not result[0].get('result'):
+            if not result or len(result) == 0:
                 return None
             
-            user_data = result[0]['result'][0]
+            user_data = result[0]
+            # Convert RecordID to string
+            if hasattr(user_data['id'], 'id'):
+                user_data['id'] = str(user_data['id'].id)
+            else:
+                user_data['id'] = str(user_data['id'])
             return UserResponse(**user_data)
             
         except Exception as e:
@@ -131,10 +138,15 @@ class UserService:
                 {"email": email}
             )
             
-            if not result or not result[0].get('result'):
+            if not result or len(result) == 0:
                 return None
             
-            user_data = result[0]['result'][0]
+            user_data = result[0]
+            # Convert RecordID to string
+            if hasattr(user_data['id'], 'id'):
+                user_data['id'] = str(user_data['id'].id)
+            else:
+                user_data['id'] = str(user_data['id'])
             return UserResponse(**user_data)
             
         except Exception as e:
@@ -145,18 +157,32 @@ class UserService:
         try:
             db = await self._get_db()
             
-            result = await db.execute(
-                "SELECT * FROM user WHERE email = $email",
-                {"email": email}
-            )
-            
-            if not result or not result[0].get('result'):
-                return None
-            
-            user_data = result[0]['result'][0]
-            return UserInDB(**user_data)
+            with logfire.span("get_user_with_password", email=email):
+                result = await db.execute(
+                    "SELECT * FROM user WHERE email = $email",
+                    {"email": email}
+                )
+                
+                logfire.info("User query executed", result_count=len(result) if result else 0)
+                
+                if not result or len(result) == 0:
+                    logfire.info("No user found", email=email)
+                    return None
+                
+                user_data = result[0]
+                
+                # Convert RecordID to string
+                if hasattr(user_data['id'], 'id'):
+                    user_data['id'] = str(user_data['id'].id)
+                else:
+                    user_data['id'] = str(user_data['id'])
+                
+                user_in_db = UserInDB(**user_data)
+                logfire.info("UserInDB created successfully", user_id=user_data['id'])
+                return user_in_db
             
         except Exception as e:
+            logfire.error("Failed to get user with password", error=str(e), email=email)
             raise DatabaseException(f"Failed to get user: {str(e)}")
     
     async def update_user(
@@ -195,10 +221,15 @@ class UserService:
             
             result = await db.execute(query, params)
             
-            if not result or not result[0].get('result'):
+            if not result or len(result) == 0:
                 raise ResourceNotFoundException("USER", user_id)
             
-            user_data = result[0]['result'][0]
+            user_data = result[0]
+            # Convert RecordID to string
+            if hasattr(user_data.get('id'), 'id'):
+                user_data['id'] = str(user_data['id'].id)
+            else:
+                user_data['id'] = str(user_data['id'])
             
             # Log update
             audit_logger.log_access(
