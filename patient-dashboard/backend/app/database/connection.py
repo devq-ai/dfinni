@@ -130,44 +130,43 @@ class DatabaseConnection:
                 "error": str(e)
             }
     
-    # @logfire.instrument("database.execute")  # Temporarily disabled due to auth issues
+    @logfire.instrument("database.execute")
     async def execute(self, query: str, params: Optional[Dict[str, Any]] = None) -> Any:
         """Execute a query with automatic reconnection on failure."""
-        # Temporarily disabled logfire.span due to auth issues
-        # with logfire.span(
-        #     "surrealdb_query",
-        #     query=query[:200] + "..." if len(query) > 200 else query,
-        #     has_params=bool(params),
-        #     namespace=self.namespace,
-        #     database=self.database
-        # ):
-        if not self._connected:
-            await self.connect()
-        
-        try:
+        with logfire.span(
+            "surrealdb_query",
+            query=query[:200] + "..." if len(query) > 200 else query,
+            has_params=bool(params),
+            namespace=self.namespace,
+            database=self.database
+        ):
+            if not self._connected:
+                await self.connect()
+            
             try:
-                logfire.info("Executing SurrealDB query", query_type=query.split()[0].upper())
-            except:
-                pass
-            result = await self.db.query(query, params or {})
-            try:
-                logfire.info(
-                    "Query executed successfully",
-                    result_type=type(result).__name__,
-                    result_length=len(result) if isinstance(result, (list, dict)) else None
-                )
-            except:
-                pass
-            return result
-        except Exception as e:
-            try:
-                logfire.error(
-                    "Query execution failed",
-                    error_type=type(e).__name__,
-                    error_message=str(e)
-                )
-            except:
-                pass
+                try:
+                    logfire.info("Executing SurrealDB query", query_type=query.split()[0].upper())
+                except:
+                    pass
+                result = await self.db.query(query, params or {})
+                try:
+                    logfire.info(
+                        "Query executed successfully",
+                        result_type=type(result).__name__,
+                        result_length=len(result) if isinstance(result, (list, dict)) else None
+                    )
+                except:
+                    pass
+                return result
+            except Exception as e:
+                try:
+                    logfire.error(
+                        "Query execution failed",
+                        error_type=type(e).__name__,
+                        error_message=str(e)
+                    )
+                except:
+                    pass
             logger.error(f"Query execution failed: {e}")
             # Try to reconnect once
             self._connected = False
