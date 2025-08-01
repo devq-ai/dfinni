@@ -26,12 +26,6 @@ from app.database.connection import get_database
 from app.models.user import UserResponse
 from app.config.settings import get_settings
 
-# Configure Logfire using Ptolemies pattern
-try:
-    logfire.configure()
-except Exception:
-    pass
-
 logger = logging.getLogger(__name__)
 settings = get_settings()
 

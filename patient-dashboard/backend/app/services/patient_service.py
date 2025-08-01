@@ -14,13 +14,6 @@ from app.database.connection import get_database
 from app.core.exceptions import ValidationException, ResourceNotFoundException
 from app.config.logging import audit_logger
 
-# Configure Logfire using Ptolemies pattern
-try:
-    logfire.configure()
-except Exception:
-    # Continue without Logfire if authentication fails
-    pass
-
 logger = logging.getLogger(__name__)
 
 # Safe Logfire helpers

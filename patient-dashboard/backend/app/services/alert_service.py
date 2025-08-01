@@ -11,13 +11,6 @@ from app.models.alert import (
 from app.database.connection import get_database
 from app.core.exceptions import ResourceNotFoundException
 
-# Configure Logfire
-try:
-    logfire.configure()
-except Exception:
-    pass
-
-
 class AlertService:
     """Service for managing alerts."""
     

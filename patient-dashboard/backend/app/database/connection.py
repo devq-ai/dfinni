@@ -12,13 +12,6 @@ from surrealdb import AsyncSurreal
 from tenacity import retry, stop_after_attempt, wait_exponential
 from app.config.settings import get_settings
 
-# Configure Logfire using Ptolemies pattern
-try:
-    logfire.configure()
-except Exception:
-    # Continue without Logfire if authentication fails
-    pass
-
 logger = logging.getLogger(__name__)
 settings = get_settings()
 

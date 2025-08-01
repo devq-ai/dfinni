@@ -3,13 +3,6 @@ Authentication API endpoints.
 Handles login, logout, token refresh, and user session management.
 """
 import logfire
-
-try:
-    logfire.configure()
-except Exception as e:
-    print(f"❌ Logfire configuration failed: {e}")
-    print("Continuing without Logfire cloud logging...")
-
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Request

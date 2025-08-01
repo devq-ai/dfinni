@@ -17,12 +17,26 @@ def configure_logging() -> None:
     
     # Configure Logfire using Ptolemies pattern - simple and automatic
     try:
-        # Set token from environment if available
-        token = os.getenv('LOGFIRE_WRITE_TOKEN') or os.getenv('LOGFIRE_TOKEN')
+        # Use LOGFIRE_WRITE_TOKEN specifically
+        token = os.getenv('LOGFIRE_WRITE_TOKEN', 'pylf_v1_us_bLfP3z6rM09wt4WYyMfr2RwTXKFdSKmv1jV9V8Ngkwq4')
         if token:
             os.environ['LOGFIRE_TOKEN'] = token
             
-        logfire.configure()
+        # Configure with explicit settings
+        logfire.configure(
+            token=token,
+            service_name='pfinni-backend',
+            service_version='1.0.0'
+        )
+        
+        # Send startup log
+        logfire.info(
+            "Logfire initialized", 
+            service="pfinni-patient-dashboard",
+            environment=environment,
+            version="1.0.0"
+        )
+        
         # Don't print in production to avoid cluttering logs
         if environment == "development":
             print("✅ Logfire configured successfully")

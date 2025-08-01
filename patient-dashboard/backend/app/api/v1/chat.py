@@ -14,12 +14,6 @@ from app.api.v1.auth import get_current_user
 from app.models.user import UserResponse
 from pydantic import BaseModel
 
-# Configure Logfire using Ptolemies pattern
-try:
-    logfire.configure()
-except Exception:
-    pass
-
 logger = logging.getLogger(__name__)
 router = APIRouter()
 chat_service = AIChatService()

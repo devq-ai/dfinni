@@ -11,12 +11,6 @@ from collections import defaultdict
 from app.database.connection import get_database
 from app.config.logging import audit_logger
 
-# Configure Logfire using Ptolemies pattern
-try:
-    logfire.configure()
-except Exception:
-    pass
-
 logger = logging.getLogger(__name__)
 
 class AnalyticsService:

@@ -12,12 +12,6 @@ from app.services.analytics_service import AnalyticsService
 from app.api.v1.auth import get_current_user
 from app.models.user import UserResponse
 
-# Configure Logfire using Ptolemies pattern
-try:
-    logfire.configure()
-except Exception:
-    pass
-
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 analytics_service = AnalyticsService()
