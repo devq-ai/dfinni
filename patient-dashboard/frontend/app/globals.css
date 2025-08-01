@@ -1,8 +1,6 @@
 /* Updated: 2025-07-31T14:00:00-06:00 - Color update */
 @import "tailwindcss";
 @import "tw-animate-css";
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
 
 @custom-variant dark (&:is(.dark *));
 
@@ -60,8 +58,8 @@
   --cyber-laser-yellow: #ffff00;
   
   /* Font Stacks */
-  --font-ui: 'Inter', 'Inter Nerd Font', 'Segoe UI', 'Roboto', sans-serif;
-  --font-mono: 'Space Mono', 'Space Mono Nerd Font', 'JetBrains Mono', monospace;
+  --font-ui: var(--font-inter, 'Inter', 'Inter Nerd Font', 'Segoe UI', 'Roboto', sans-serif);
+  --font-mono: var(--font-space-mono, 'Space Mono', 'Space Mono Nerd Font', 'JetBrains Mono', monospace);
   
   /* Font Weights */
   --font-light: 300;
