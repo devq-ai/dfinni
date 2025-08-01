@@ -91,11 +91,11 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Welcome back! Here's an overview of your patients.</p>
       </div>
       
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const trend = getStatTrend(stat.name)
           return (
-            <Card key={stat.name} className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e]">
+            <Card key={stat.name} className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.name}
@@ -124,8 +124,8 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Alerts and System Status */}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e]">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200">
           <CardHeader>
             <CardTitle>Recent Alerts</CardTitle>
             <CardDescription>Latest patient alerts requiring attention</CardDescription>
@@ -178,7 +178,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* System Status */}
-        <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e]">
+        <Card className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200">
           <CardHeader>
             <CardTitle>System Status</CardTitle>
             <CardDescription>Current operational status of all services</CardDescription>
