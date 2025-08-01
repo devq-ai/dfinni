@@ -18,7 +18,7 @@ def configure_logging() -> None:
     # Configure Logfire using Ptolemies pattern - simple and automatic
     try:
         # Use LOGFIRE_WRITE_TOKEN specifically
-        token = os.getenv('LOGFIRE_WRITE_TOKEN', 'pylf_v1_us_bLfP3z6rM09wt4WYyMfr2RwTXKFdSKmv1jV9V8Ngkwq4')
+        token = os.getenv('LOGFIRE_WRITE_TOKEN') or os.getenv('LOGFIRE_TOKEN')
         if token:
             os.environ['LOGFIRE_TOKEN'] = token
             
