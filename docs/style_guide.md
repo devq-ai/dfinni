@@ -1,4 +1,6 @@
 <!-- Updated: 2025-08-01T01:05:00-06:00 -->
+## Update Color and Fonts in Template Only
+
 ### Patient Dashboard Design System Style Guide
 
 A comprehensive design system featuring two distinctive palettes with modern typography for digital interfaces.

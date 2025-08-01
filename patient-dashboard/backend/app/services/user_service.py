@@ -35,10 +35,13 @@ class UserService:
         try:
             db = await self._get_db()
             
+            # Normalize email to lowercase
+            email = user_create.email.lower()
+            
             # Check if email already exists
             existing = await db.execute(
                 "SELECT * FROM user WHERE email = $email",
-                {"email": user_create.email}
+                {"email": email}
             )
             
             if existing and len(existing) > 0:
@@ -62,7 +65,7 @@ class UserService:
                     created_at = time::now(),
                     updated_at = time::now()
             """, {
-                "email": user_create.email,
+                "email": email,
                 "password_hash": password_hash,
                 "first_name": user_create.first_name,
                 "last_name": user_create.last_name,
@@ -80,11 +83,8 @@ class UserService:
             if not user_data:
                 raise DatabaseException("Failed to create user - no result returned")
             
-            # Convert RecordID to string
-            if hasattr(user_data.get('id'), 'id'):
-                user_data['id'] = str(user_data['id'].id)
-            else:
-                user_data['id'] = str(user_data['id'])
+            # Keep full RecordID format
+            user_data['id'] = str(user_data['id'])
             
             # Log user creation
             audit_logger.log_access(
@@ -109,20 +109,23 @@ class UserService:
         try:
             db = await self._get_db()
             
-            result = await db.execute(
-                "SELECT * FROM user WHERE id = $id",
-                {"id": user_id}
-            )
+            # Handle both formats: 'user:id' and just 'id'
+            if ':' in user_id:
+                # Full RecordID format - use direct query
+                result = await db.execute(f"SELECT * FROM {user_id}")
+            else:
+                # Just ID - use WHERE clause
+                result = await db.execute(
+                    "SELECT * FROM user WHERE id = $id",
+                    {"id": user_id}
+                )
             
             if not result or len(result) == 0:
                 return None
             
             user_data = result[0]
-            # Convert RecordID to string
-            if hasattr(user_data['id'], 'id'):
-                user_data['id'] = str(user_data['id'].id)
-            else:
-                user_data['id'] = str(user_data['id'])
+            # Keep full RecordID format
+            user_data['id'] = str(user_data['id'])
             return UserResponse(**user_data)
             
         except Exception as e:
@@ -133,6 +136,9 @@ class UserService:
         try:
             db = await self._get_db()
             
+            # Normalize email to lowercase
+            email = email.lower()
+            
             result = await db.execute(
                 "SELECT * FROM user WHERE email = $email",
                 {"email": email}
@@ -142,11 +148,8 @@ class UserService:
                 return None
             
             user_data = result[0]
-            # Convert RecordID to string
-            if hasattr(user_data['id'], 'id'):
-                user_data['id'] = str(user_data['id'].id)
-            else:
-                user_data['id'] = str(user_data['id'])
+            # Keep full RecordID format
+            user_data['id'] = str(user_data['id'])
             return UserResponse(**user_data)
             
         except Exception as e:
@@ -156,6 +159,9 @@ class UserService:
         """Get user with password hash for authentication."""
         try:
             db = await self._get_db()
+            
+            # Normalize email to lowercase
+            email = email.lower()
             
             with logfire.span("get_user_with_password", email=email):
                 result = await db.execute(
@@ -171,11 +177,8 @@ class UserService:
                 
                 user_data = result[0]
                 
-                # Convert RecordID to string
-                if hasattr(user_data['id'], 'id'):
-                    user_data['id'] = str(user_data['id'].id)
-                else:
-                    user_data['id'] = str(user_data['id'])
+                # Keep full RecordID format
+                user_data['id'] = str(user_data['id'])
                 
                 user_in_db = UserInDB(**user_data)
                 logfire.info("UserInDB created successfully", user_id=user_data['id'])
@@ -225,11 +228,8 @@ class UserService:
                 raise ResourceNotFoundException("USER", user_id)
             
             user_data = result[0]
-            # Convert RecordID to string
-            if hasattr(user_data.get('id'), 'id'):
-                user_data['id'] = str(user_data['id'].id)
-            else:
-                user_data['id'] = str(user_data['id'])
+            # Keep full RecordID format
+            user_data['id'] = str(user_data['id'])
             
             # Log update
             audit_logger.log_access(

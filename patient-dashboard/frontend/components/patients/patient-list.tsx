@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react'
 import { Patient } from '@/types/patient'
 import { patientsApi } from '@/lib/api/patients'
 import Link from 'next/link'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 export function PatientList() {
   const [patients, setPatients] = useState<Patient[]>([])
@@ -32,57 +35,59 @@ export function PatientList() {
     }
   }
 
-  const getRiskBadgeColor = (score?: number) => {
-    if (!score) return 'bg-gray-100 text-gray-800'
-    if (score <= 2) return 'bg-green-100 text-green-800'
-    if (score <= 4) return 'bg-yellow-100 text-yellow-800'
-    return 'bg-red-100 text-red-800'
+  const getRiskBadgeVariant = (score?: number): "default" | "secondary" | "destructive" | "outline" => {
+    if (!score) return 'default'
+    if (score <= 2) return 'secondary'
+    if (score <= 4) return 'outline'
+    return 'destructive'
   }
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="text-gray-500">Loading patients...</div>
+        <div className="text-muted-foreground">Loading patients...</div>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-md p-4">
-        <p className="text-red-800">{error}</p>
-        <button
+      <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e] p-4">
+        <p className="text-destructive">{error}</p>
+        <Button
           onClick={loadPatients}
-          className="mt-2 text-sm text-red-600 hover:text-red-500"
+          variant="outline"
+          size="sm"
+          className="mt-2 border-[#3e3e3e]"
         >
           Try again
-        </button>
-      </div>
+        </Button>
+      </Card>
     )
   }
 
   return (
     <div>
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e] overflow-hidden">
+        <table className="min-w-full">
+          <thead className="bg-[#0f0f0f] border-b border-[#3e3e3e]">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Patient
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 MRN
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Contact
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Risk Score
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Last Visit
               </th>
               <th className="relative px-6 py-3">
@@ -90,45 +95,41 @@ export function PatientList() {
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="divide-y divide-[#3e3e3e]">
             {patients.map((patient) => (
-              <tr key={patient.id} className="hover:bg-gray-50">
+              <tr key={patient.id} className="hover:bg-[#0f0f0f] transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium">
                       {patient.firstName} {patient.lastName}
                     </div>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-muted-foreground">
                       DOB: {new Date(patient.dateOfBirth).toLocaleDateString()}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{patient.mrn}</div>
+                  <div className="text-sm">{patient.mrn}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div>
-                    <div className="text-sm text-gray-900">{patient.email}</div>
-                    <div className="text-sm text-gray-500">{patient.phone}</div>
+                    <div className="text-sm">{patient.email}</div>
+                    <div className="text-sm text-muted-foreground">{patient.phone}</div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {patient.riskScore && (
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRiskBadgeColor(patient.riskScore)}`}>
+                    <Badge variant={getRiskBadgeVariant(patient.riskScore)}>
                       {patient.riskScore}
-                    </span>
+                    </Badge>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    patient.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
+                  <Badge variant={patient.status === 'active' ? 'secondary' : 'outline'}>
                     {patient.status}
-                  </span>
+                  </Badge>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                   {patient.lastVisit 
                     ? new Date(patient.lastVisit).toLocaleDateString()
                     : 'N/A'
@@ -137,7 +138,7 @@ export function PatientList() {
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <Link
                     href={`/patients/${patient.id}`}
-                    className="text-indigo-600 hover:text-indigo-900"
+                    className="text-primary hover:text-primary/80 transition-colors"
                   >
                     View
                   </Link>
@@ -146,30 +147,14 @@ export function PatientList() {
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
       {/* Pagination */}
       {total > pageSize && (
-        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-4">
-          <div className="flex-1 flex justify-between sm:hidden">
-            <button
-              onClick={() => setPage(page - 1)}
-              disabled={page === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <button
-              onClick={() => setPage(page + 1)}
-              disabled={page * pageSize >= total}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+        <Card className="bg-card border-border dark:bg-[#141414] dark:border-[#3e3e3e] px-4 py-3 mt-4">
+          <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-muted-foreground">
                 Showing{' '}
                 <span className="font-medium">{(page - 1) * pageSize + 1}</span>
                 {' '}to{' '}
@@ -181,26 +166,28 @@ export function PatientList() {
                 {' '}results
               </p>
             </div>
-            <div>
-              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                <button
-                  onClick={() => setPage(page - 1)}
-                  disabled={page === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <button
-                  onClick={() => setPage(page + 1)}
-                  disabled={page * pageSize >= total}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                >
-                  Next
-                </button>
-              </nav>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setPage(page - 1)}
+                disabled={page === 1}
+                variant="outline"
+                size="sm"
+                className="border-[#3e3e3e]"
+              >
+                Previous
+              </Button>
+              <Button
+                onClick={() => setPage(page + 1)}
+                disabled={page * pageSize >= total}
+                variant="outline"
+                size="sm"
+                className="border-[#3e3e3e]"
+              >
+                Next
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
       )}
     </div>
   )

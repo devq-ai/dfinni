@@ -1,18 +1,34 @@
-// Updated: 2025-07-31T14:05:00-06:00
-import { ReactNode } from 'react'
-import { Sidebar } from '@/components/layout/sidebar'
-import { Header } from '@/components/layout/header'
+import KBar from '@/components/kbar';
+import AppSidebar from '@/components/layout/app-sidebar';
+import Header from '@/components/layout/header';
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export const metadata: Metadata = {
+  title: 'Next Shadcn Dashboard Starter',
+  description: 'Basic dashboard with Next.js and Shadcn'
+};
+
+export default async function DashboardLayout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+  // Persisting the sidebar state in the cookie.
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground dark:bg-[#0f0f0f] dark:text-white">
-      <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto bg-card p-4 md:p-6 lg:p-8 dark:bg-[#0f0f0f]">
+    <KBar>
+      <SidebarProvider defaultOpen={defaultOpen}>
+        <AppSidebar />
+        <SidebarInset>
+          <Header />
+          {/* page main content */}
           {children}
-        </main>
-      </div>
-    </div>
-  )
+          {/* page main content ends */}
+        </SidebarInset>
+      </SidebarProvider>
+    </KBar>
+  );
 }
