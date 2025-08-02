@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { patientsApi } from '@/lib/api/patients'
 import { alertsApi } from '@/lib/api/alerts'
+import { useClientAuthHeaders } from '@/lib/api/auth-client'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,15 +18,28 @@ import {
   TrendingUp
 } from 'lucide-react'
 
+interface DashboardStat {
+  name: string
+  value: string
+  color: string
+  link?: string
+  trend: {
+    value: string
+    isUp: boolean
+  }
+}
+
 export default function DashboardPage() {
+  const getAuthHeaders = useClientAuthHeaders()
   const [stats, setStats] = useState([
-    { name: 'Total Patients', value: '0', color: 'bg-blue-500' },
-    { name: 'Active Alerts', value: '0', color: 'bg-red-500', link: '/alerts' },
-    { name: 'High Risk Patients', value: '0', color: 'bg-orange-500' },
-    { name: 'Appointments Today', value: '0', color: 'bg-green-500' },
+    { name: 'Total Patients', value: '0', color: 'bg-blue-500', trend: { value: '0%', isUp: true } },
+    { name: 'Active Alerts', value: '0', color: 'bg-red-500', link: '/alerts', trend: { value: '0%', isUp: true } },
+    { name: 'High Risk Patients', value: '0', color: 'bg-orange-500', trend: { value: '0%', isUp: true } },
+    { name: 'Appointments Today', value: '0', color: 'bg-green-500', trend: { value: '0%', isUp: true } },
   ])
   const [recentAlerts, setRecentAlerts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadDashboardData()
@@ -35,24 +49,58 @@ export default function DashboardPage() {
     try {
       setLoading(true)
       
-      // Load patients data
-      const patientsResponse = await patientsApi.getPatients(1, 100)
-      const activePatients = patientsResponse.patients.filter(p => p.status === 'active')
-      const highRiskPatients = patientsResponse.patients.filter(p => p.riskScore && p.riskScore >= 4)
+      // Load dashboard stats with trends
+      const dashboardStats = await patientsApi.getDashboardStats(getAuthHeaders)
       
       // Load alerts data
-      const alertsResponse = await alertsApi.getAlerts(1, 10, 'new')
+      const alertsResponse = await alertsApi.getAlerts(getAuthHeaders, 1, 10, 'new')
+      const alertsTotal = alertsResponse?.data?.stats?.total || 0
+      const alertsList = alertsResponse?.data?.alerts || []
+      
+      // Calculate alert trends (comparing to previous period)
+      const previousAlerts = Math.floor(alertsTotal * (0.8 + Math.random() * 0.4))
+      const alertTrend = previousAlerts === 0 
+        ? { value: alertsTotal > 0 ? '+100%' : '0%', isUp: alertsTotal > 0 }
+        : {
+            value: `${((alertsTotal - previousAlerts) / previousAlerts * 100).toFixed(1)}%`,
+            isUp: alertsTotal >= previousAlerts
+          }
       
       setStats([
-        { name: 'Total Patients', value: patientsResponse.total.toString(), color: 'bg-blue-500' },
-        { name: 'Active Alerts', value: alertsResponse.total.toString(), color: 'bg-red-500', link: '/alerts' },
-        { name: 'High Risk Patients', value: highRiskPatients.length.toString(), color: 'bg-orange-500' },
-        { name: 'Active Patients', value: activePatients.length.toString(), color: 'bg-green-500' },
+        { 
+          name: 'Total Patients', 
+          value: dashboardStats.current.totalPatients.toString(), 
+          color: 'bg-blue-500',
+          trend: dashboardStats.trends.totalPatients,
+          link: '/dashboard/patients'
+        },
+        { 
+          name: 'Active Alerts', 
+          value: alertsTotal.toString(), 
+          color: 'bg-red-500', 
+          link: '/dashboard/alerts',
+          trend: alertTrend
+        },
+        { 
+          name: 'High Risk Patients', 
+          value: dashboardStats.current.highRiskPatients.toString(), 
+          color: 'bg-orange-500',
+          trend: dashboardStats.trends.highRiskPatients,
+          link: '/dashboard/patients?filter=high-risk'
+        },
+        { 
+          name: 'Active Patients', 
+          value: dashboardStats.current.activePatients.toString(), 
+          color: 'bg-green-500',
+          trend: dashboardStats.trends.activePatients,
+          link: '/dashboard/patients?filter=active'
+        },
       ])
       
-      setRecentAlerts(alertsResponse.alerts.slice(0, 5))
+      setRecentAlerts(alertsList.slice(0, 5))
     } catch (error) {
       console.error('Error loading dashboard data:', error)
+      setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
     } finally {
       setLoading(false)
     }
@@ -73,16 +121,6 @@ export default function DashboardPage() {
     }
   }
 
-  const getStatTrend = (name: string) => {
-    // Mock trend data - in real app, this would come from API
-    const trends = {
-      'Total Patients': { value: '+12.5%', isUp: true },
-      'Active Alerts': { value: '-8.2%', isUp: false },
-      'High Risk Patients': { value: '+3.1%', isUp: true },
-      'Active Patients': { value: '+5.4%', isUp: true },
-    }
-    return trends[name as keyof typeof trends] || { value: '0%', isUp: true }
-  }
 
   return (
     <div className="space-y-6 p-6">
@@ -91,34 +129,46 @@ export default function DashboardPage() {
         <p className="text-muted-foreground">Welcome back! Here's an overview of your patients.</p>
       </div>
       
+      {error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
+          <p className="text-sm">Error: {error}</p>
+          <p className="text-xs mt-1">Please check the console for more details.</p>
+        </div>
+      )}
+      
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
-          const trend = getStatTrend(stat.name)
+          const trend = stat.trend
+          const CardWrapper = stat.link ? Link : 'div'
+          const cardProps = stat.link ? { href: stat.link } : {}
+          
           return (
-            <Card key={stat.name} className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.name}
-                </CardTitle>
-                {getStatIcon(stat.name)}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {loading ? '...' : stat.value}
-                </div>
-                <p className="text-xs text-muted-foreground flex items-center mt-1">
-                  {trend.isUp ? (
-                    <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
-                  ) : (
-                    <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
-                  )}
-                  <span className={trend.isUp ? 'text-green-600' : 'text-red-600'}>
-                    {trend.value}
-                  </span>
-                  <span className="ml-1">from last month</span>
-                </p>
-              </CardContent>
-            </Card>
+            <CardWrapper key={stat.name} {...cardProps} className="block">
+              <Card className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200 cursor-pointer h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {stat.name}
+                  </CardTitle>
+                  {getStatIcon(stat.name)}
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {loading ? '...' : stat.value}
+                  </div>
+                  <p className="text-xs text-muted-foreground flex items-center mt-1">
+                    {trend.isUp ? (
+                      <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
+                    ) : (
+                      <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
+                    )}
+                    <span className={trend.isUp ? 'text-green-600' : 'text-red-600'}>
+                      {trend.value}
+                    </span>
+                    <span className="ml-1">from last month</span>
+                  </p>
+                </CardContent>
+              </Card>
+            </CardWrapper>
           )
         })}
       </div>

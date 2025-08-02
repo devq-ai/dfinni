@@ -27,15 +27,29 @@
     <FirstName>Joseph</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>UHC103456789</MemberIdentification>
+    <MRN>MRN015</MRN>
     <SocialSecurityNumber>231-53-9540</SocialSecurityNumber>
     <DateOfBirth>1992-01-25</DateOfBirth>
     <Gender>M</Gender>
+    <GroupNumber>GRP015</GroupNumber>
+    <PatientStatus>inquiry</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>joseph.jackson@email.com</Email>
+    <Phone>(555) 567-8901</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Albuquerque</City>
       <State>NM</State>
-      <PostalCode>87101</PostalCode>
+      <ZipCode>87101</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>UHC103456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP015</GroupNumber>
+      <EffectiveDate>2025-01-25</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

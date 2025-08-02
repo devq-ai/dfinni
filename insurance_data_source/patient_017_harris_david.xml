@@ -27,15 +27,29 @@
     <FirstName>David</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>BCBS103456789</MemberIdentification>
+    <MRN>MRN017</MRN>
     <SocialSecurityNumber>663-33-5529</SocialSecurityNumber>
     <DateOfBirth>1984-10-30</DateOfBirth>
     <Gender>M</Gender>
+    <GroupNumber>GRP017</GroupNumber>
+    <PatientStatus>onboarding</PatientStatus>
+    <RiskLevel>Medium</RiskLevel>
+    <Email>david.harris@email.com</Email>
+    <Phone>(555) 789-0123</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Sacramento</City>
       <State>CA</State>
-      <PostalCode>95814</PostalCode>
+      <ZipCode>95814</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>BCBS103456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP017</GroupNumber>
+      <EffectiveDate>2025-04-21</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

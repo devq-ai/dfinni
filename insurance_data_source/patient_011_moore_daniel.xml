@@ -27,15 +27,29 @@
     <FirstName>Daniel</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>CIG923456789</MemberIdentification>
+    <MRN>MRN011</MRN>
     <SocialSecurityNumber>344-46-7452</SocialSecurityNumber>
     <DateOfBirth>1990-06-15</DateOfBirth>
     <Gender>M</Gender>
+    <GroupNumber>GRP011</GroupNumber>
+    <PatientStatus>onboarding</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>daniel.moore@email.com</Email>
+    <Phone>(555) 123-4567</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Seattle</City>
       <State>WA</State>
-      <PostalCode>98101</PostalCode>
+      <ZipCode>98101</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>CIG923456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP011</GroupNumber>
+      <EffectiveDate>2025-03-07</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

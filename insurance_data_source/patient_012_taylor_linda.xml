@@ -27,15 +27,29 @@
     <FirstName>Linda</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>HUM923456789</MemberIdentification>
+    <MRN>MRN012</MRN>
     <SocialSecurityNumber>312-48-4149</SocialSecurityNumber>
     <DateOfBirth>1955-12-28</DateOfBirth>
     <Gender>F</Gender>
+    <GroupNumber>GRP012</GroupNumber>
+    <PatientStatus>urgent</PatientStatus>
+    <RiskLevel>High</RiskLevel>
+    <Email>linda.taylor@email.com</Email>
+    <Phone>(555) 234-5678</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Portland</City>
       <State>OR</State>
-      <PostalCode>97201</PostalCode>
+      <ZipCode>97201</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>HUM923456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP012</GroupNumber>
+      <EffectiveDate>2025-03-19</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

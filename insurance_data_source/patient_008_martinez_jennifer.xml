@@ -27,15 +27,29 @@
     <FirstName>Jennifer</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>UHC823456789</MemberIdentification>
+    <MRN>MRN008</MRN>
     <SocialSecurityNumber>222-95-9776</SocialSecurityNumber>
     <DateOfBirth>1982-04-12</DateOfBirth>
     <Gender>F</Gender>
+    <GroupNumber>GRP008</GroupNumber>
+    <PatientStatus>urgent</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>jennifer.martinez@email.com</Email>
+    <Phone>(555) 890-1234</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>San Diego</City>
       <State>CA</State>
-      <PostalCode>92101</PostalCode>
+      <ZipCode>92101</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>UHC823456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP008</GroupNumber>
+      <EffectiveDate>2024-08-24</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

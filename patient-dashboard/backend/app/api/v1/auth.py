@@ -14,6 +14,7 @@ from app.models.user import (
 )
 from app.services.user_service import UserService
 from app.services.auth_service import AuthService
+from app.services.clerk_auth_service import ClerkAuthService
 from app.core.exceptions import AuthenticationException, ValidationException
 from app.config.settings import get_settings
 from app.database.connection import get_database
@@ -22,15 +23,42 @@ settings = get_settings()
 router = APIRouter()
 
 # OAuth2 scheme for token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login", auto_error=False)
 
 # Initialize services
 user_service = UserService()
 auth_service = AuthService()
+clerk_auth_service = ClerkAuthService()
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
-    """Get current authenticated user from JWT token."""
+async def get_current_user(
+    request: Request,
+    token: Optional[str] = Depends(oauth2_scheme)
+) -> UserResponse:
+    """Get current authenticated user from JWT token (Clerk or internal)."""
+    # Check for Bearer token in Authorization header
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+    
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Try Clerk verification first
+    try:
+        clerk_payload = await clerk_auth_service.verify_clerk_token(token)
+        # Get or create user from Clerk data
+        user = await clerk_auth_service.get_or_create_user_from_clerk(clerk_payload)
+        return user
+    except HTTPException:
+        # If Clerk verification fails, try internal JWT
+        pass
+    
+    # Fall back to internal JWT verification
     try:
         payload = auth_service.verify_token(token)
         user_id = payload.get("user_id")
@@ -43,7 +71,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserResponse:
         
         return user
     except Exception as e:
-        raise AuthenticationException(str(e))
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @router.post("/register", response_model=UserResponse)

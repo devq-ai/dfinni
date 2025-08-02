@@ -8,6 +8,7 @@ import {
   SignedOut,
   UserButton,
 } from '@clerk/nextjs'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 const inter = Inter({ 
@@ -24,7 +25,7 @@ const spaceMono = Space_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'PFINNI Patient Dashboard',
+  title: 'pfinni - Patient Dashboard',
   description: 'Healthcare patient management system',
 }
 
@@ -61,6 +62,7 @@ export default function RootLayout({
             </SignedIn>
           </header>
           {children}
+          <Toaster />
         </body>
       </html>
     </ClerkProvider>

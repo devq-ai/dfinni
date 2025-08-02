@@ -27,15 +27,29 @@
     <FirstName>Charles</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>HUM103456789</MemberIdentification>
+    <MRN>MRN019</MRN>
     <SocialSecurityNumber>756-67-7208</SocialSecurityNumber>
     <DateOfBirth>1988-02-14</DateOfBirth>
     <Gender>M</Gender>
+    <GroupNumber>GRP019</GroupNumber>
+    <PatientStatus>churned</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>charles.lee@email.com</Email>
+    <Phone>(555) 901-2345</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Los Angeles</City>
       <State>CA</State>
-      <PostalCode>90001</PostalCode>
+      <ZipCode>90001</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>HUM103456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP019</GroupNumber>
+      <EffectiveDate>2025-05-26</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

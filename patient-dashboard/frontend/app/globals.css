@@ -58,8 +58,8 @@
   --cyber-laser-yellow: #ffff00;
   
   /* Font Stacks */
-  --font-ui: var(--font-inter, 'Inter', 'Inter Nerd Font', 'Segoe UI', 'Roboto', sans-serif);
-  --font-mono: var(--font-space-mono, 'Space Mono', 'Space Mono Nerd Font', 'JetBrains Mono', monospace);
+  --font-ui: 'Inter Nerd Font', var(--font-inter), 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+  --font-mono: 'Space Mono Nerd Font', var(--font-space-mono), 'Space Mono', 'JetBrains Mono', monospace;
   
   /* Font Weights */
   --font-light: 300;

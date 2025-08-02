@@ -89,6 +89,7 @@ class Settings(BaseSettings):
     LOGFIRE_TOKEN: Optional[str] = Field(default=None, env="LOGFIRE_TOKEN")
     RESEND_API_KEY: Optional[str] = Field(default=None, env="RESEND_API_KEY")
     ANTHROPIC_API_KEY: Optional[str] = Field(default=None, env="ANTHROPIC_API_KEY")
+    CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="CLERK_SECRET_KEY")
 
     # Insurance Integration
     INSURANCE_CLIENT_ID: Optional[str] = Field(default=None, env="INSURANCE_CLIENT_ID")

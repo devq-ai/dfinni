@@ -13,7 +13,7 @@ from app.api.v1.auth import get_current_user
 from app.models.user import UserResponse
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/dashboard", tags=["dashboard"])
+router = APIRouter(tags=["dashboard"])
 analytics_service = AnalyticsService()
 
 @router.get("/metrics")
@@ -48,6 +48,61 @@ async def get_dashboard_metrics(
         except:
             pass
         raise HTTPException(status_code=500, detail="Failed to retrieve dashboard metrics")
+
+
+@router.get("/stats")
+async def get_dashboard_stats(
+    current_user: UserResponse = Depends(get_current_user)
+) -> Dict[str, Any]:
+    """
+    Get dashboard statistics with trends.
+    """
+    try:
+        # Get current period stats
+        current_stats = await analytics_service.get_dashboard_metrics()
+        
+        # Calculate previous period stats (mock for now)
+        previous_stats = {
+            "totalPatients": int(current_stats.get("totalPatients", 0) * 0.9),
+            "activePatients": int(current_stats.get("activePatients", 0) * 0.85),
+            "highRiskPatients": int(current_stats.get("urgentPatients", 0) * 1.1),
+            "appointmentsToday": 0  # Not implemented yet
+        }
+        
+        # Calculate trends
+        def calculate_trend(current: int, previous: int) -> Dict[str, Any]:
+            if previous == 0:
+                value = "+100%" if current > 0 else "0%"
+                is_up = current > 0
+            else:
+                change = ((current - previous) / previous) * 100
+                value = f"{change:+.1f}%"
+                is_up = change >= 0
+            return {"value": value, "isUp": is_up}
+        
+        current = {
+            "totalPatients": current_stats.get("totalPatients", 0),
+            "activePatients": current_stats.get("activePatients", 0),
+            "highRiskPatients": current_stats.get("urgentPatients", 0),
+            "appointmentsToday": 0
+        }
+        
+        trends = {
+            "totalPatients": calculate_trend(current["totalPatients"], previous_stats["totalPatients"]),
+            "activePatients": calculate_trend(current["activePatients"], previous_stats["activePatients"]),
+            "highRiskPatients": calculate_trend(current["highRiskPatients"], previous_stats["highRiskPatients"]),
+            "appointmentsToday": {"value": "0%", "isUp": True}
+        }
+        
+        return {
+            "current": current,
+            "previous": previous_stats,
+            "trends": trends
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting dashboard stats: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to retrieve dashboard stats")
 
 @router.get("/recent-activity")
 async def get_recent_activity(

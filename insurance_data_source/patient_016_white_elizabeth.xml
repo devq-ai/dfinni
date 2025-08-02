@@ -27,15 +27,29 @@
     <FirstName>Elizabeth</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>AET103456789</MemberIdentification>
+    <MRN>MRN016</MRN>
     <SocialSecurityNumber>672-85-9862</SocialSecurityNumber>
     <DateOfBirth>1979-07-11</DateOfBirth>
     <Gender>F</Gender>
+    <GroupNumber>GRP016</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>elizabeth.white@email.com</Email>
+    <Phone>(555) 678-9012</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Tucson</City>
       <State>AZ</State>
-      <PostalCode>85701</PostalCode>
+      <ZipCode>85701</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>AET103456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP016</GroupNumber>
+      <EffectiveDate>2024-08-02</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

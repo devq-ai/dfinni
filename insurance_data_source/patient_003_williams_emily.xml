@@ -27,16 +27,29 @@
     <FirstName>Emily</FirstName>
     <MiddleName>Grace</MiddleName>
     <MemberIdentification>BCBS555789456</MemberIdentification>
+    <MRN>MRN003</MRN>
     <SocialSecurityNumber>345-67-8901</SocialSecurityNumber>
     <DateOfBirth>1992-07-08</DateOfBirth>
     <Gender>F</Gender>
     <GroupNumber>GRP003</GroupNumber>
+    <PatientStatus>inquiry</PatientStatus>
+    <RiskLevel>Medium</RiskLevel>
+    <Email>emily.williams@email.com</Email>
+    <Phone>(555) 345-6789</Phone>
     <Address>
-      <AddressLine1>789 Pine Lane</AddressLine1>
+      <Street>789 Pine Lane</Street>
       <City>Houston</City>
       <State>TX</State>
-      <PostalCode>77001</PostalCode>
+      <ZipCode>77001</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>BCBS555789456</MemberId>
+      <Company>Blue Cross Blue Shield</Company>
+      <PlanType>EPO Advantage</PlanType>
+      <GroupNumber>GRP003</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

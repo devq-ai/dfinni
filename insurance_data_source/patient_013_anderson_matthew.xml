@@ -27,15 +27,29 @@
     <FirstName>Matthew</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>KAI923456789</MemberIdentification>
+    <MRN>MRN013</MRN>
     <SocialSecurityNumber>835-35-8505</SocialSecurityNumber>
     <DateOfBirth>1987-03-19</DateOfBirth>
     <Gender>M</Gender>
+    <GroupNumber>GRP013</GroupNumber>
+    <PatientStatus>churned</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>matthew.anderson@email.com</Email>
+    <Phone>(555) 345-6789</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Las Vegas</City>
       <State>NV</State>
-      <PostalCode>89101</PostalCode>
+      <ZipCode>89101</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>KAI923456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP013</GroupNumber>
+      <EffectiveDate>2025-02-07</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

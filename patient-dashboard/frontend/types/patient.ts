@@ -1,17 +1,20 @@
+export type PatientStatus = 'inquiry' | 'onboarding' | 'active' | 'churned' | 'urgent';
+
 export interface Patient {
   id: string
   mrn: string
   firstName: string
+  middleName?: string
   lastName: string
   dateOfBirth: string
   gender: 'male' | 'female' | 'other'
   email?: string
   phone?: string
-  address?: {
+  address: {
     street: string
     city: string
     state: string
-    zipCode: string
+    zip: string
   }
   insurance?: {
     provider: string
@@ -29,7 +32,9 @@ export interface Patient {
   riskScore?: number
   lastVisit?: string
   nextAppointment?: string
-  status: 'active' | 'inactive' | 'discharged'
+  status: PatientStatus
+  assignedProviderId?: string
+  assignedProviderName?: string
   createdAt: string
   updatedAt: string
 }
@@ -44,17 +49,20 @@ export interface PatientListResponse {
 export interface CreatePatientDto {
   mrn: string
   firstName: string
+  middleName?: string
   lastName: string
   dateOfBirth: string
   gender: 'male' | 'female' | 'other'
   email?: string
   phone?: string
-  address?: {
+  address: {
     street: string
     city: string
     state: string
-    zipCode: string
+    zip: string
   }
+  status: PatientStatus
+  assignedProviderId?: string
   insurance?: {
     provider: string
     policyNumber: string
@@ -71,5 +79,4 @@ export interface UpdatePatientDto extends Partial<CreatePatientDto> {
   allergies?: string[]
   medications?: string[]
   conditions?: string[]
-  status?: 'active' | 'inactive' | 'discharged'
 }

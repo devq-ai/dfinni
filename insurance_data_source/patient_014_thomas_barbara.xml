@@ -27,15 +27,29 @@
     <FirstName>Barbara</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>ANT923456789</MemberIdentification>
+    <MRN>MRN014</MRN>
     <SocialSecurityNumber>316-73-7350</SocialSecurityNumber>
     <DateOfBirth>1960-08-04</DateOfBirth>
     <Gender>F</Gender>
+    <GroupNumber>GRP014</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Medium</RiskLevel>
+    <Email>barbara.thomas@email.com</Email>
+    <Phone>(555) 456-7890</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Salt Lake City</City>
       <State>UT</State>
-      <PostalCode>84101</PostalCode>
+      <ZipCode>84101</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>ANT923456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP014</GroupNumber>
+      <EffectiveDate>2024-12-19</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

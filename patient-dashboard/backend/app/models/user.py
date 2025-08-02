@@ -11,6 +11,9 @@ class UserRole(str, Enum):
     PROVIDER = "PROVIDER"
     ADMIN = "ADMIN"
     AUDIT = "AUDIT"
+    USER = "USER"  # Default role for Clerk users
+    DOCTOR = "DOCTOR"
+    NURSE = "NURSE"
 
 class UserBase(BaseModel):
     """Base user model."""
@@ -19,6 +22,7 @@ class UserBase(BaseModel):
     last_name: str = Field(..., min_length=1, max_length=100)
     role: UserRole
     is_active: bool = True
+    clerk_user_id: Optional[str] = None
 
 class UserCreate(UserBase):
     """Model for creating a new user."""

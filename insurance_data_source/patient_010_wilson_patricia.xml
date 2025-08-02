@@ -27,15 +27,29 @@
     <FirstName>Patricia</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>BCBS923456789</MemberIdentification>
+    <MRN>MRN010</MRN>
     <SocialSecurityNumber>474-51-6936</SocialSecurityNumber>
     <DateOfBirth>1968-11-07</DateOfBirth>
     <Gender>F</Gender>
+    <GroupNumber>GRP010</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>patricia.wilson@email.com</Email>
+    <Phone>(555) 012-3456</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Denver</City>
       <State>CO</State>
-      <PostalCode>80201</PostalCode>
+      <ZipCode>80201</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>BCBS923456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP010</GroupNumber>
+      <EffectiveDate>2025-03-18</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

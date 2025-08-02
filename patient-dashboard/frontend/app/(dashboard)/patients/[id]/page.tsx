@@ -167,7 +167,7 @@ export default function PatientDetailPage() {
                   <dt className="text-sm font-medium text-gray-500">Address</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                     {patient.address.street}<br />
-                    {patient.address.city}, {patient.address.state} {patient.address.zipCode}
+                    {patient.address.city}, {patient.address.state} {patient.address.zip}
                   </dd>
                 </div>
               )}

@@ -137,6 +137,10 @@ class RequestValidationMiddleware(BaseHTTPMiddleware):
     """Validate and sanitize incoming requests."""
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        # Skip validation for OPTIONS requests (CORS preflight)
+        if request.method == "OPTIONS":
+            return await call_next(request)
+            
         # Check content type for POST/PUT requests (skip OAuth2 form login)
         if request.method in ["POST", "PUT", "PATCH"] and request.url.path != "/api/v1/auth/login":
             content_type = request.headers.get("content-type", "")

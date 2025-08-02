@@ -27,16 +27,29 @@
     <FirstName>Sarah</FirstName>
     <MiddleName>Marie</MiddleName>
     <MemberIdentification>UHC123456789</MemberIdentification>
+    <MRN>MRN001</MRN>
     <SocialSecurityNumber>123-45-6789</SocialSecurityNumber>
     <DateOfBirth>1985-03-15</DateOfBirth>
     <Gender>F</Gender>
     <GroupNumber>GRP001</GroupNumber>
+    <PatientStatus>urgent</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>sarah.anderson@email.com</Email>
+    <Phone>(555) 123-4567</Phone>
     <Address>
-      <AddressLine1>123 Maple Street</AddressLine1>
+      <Street>123 Maple Street</Street>
       <City>Austin</City>
       <State>TX</State>
-      <PostalCode>78701</PostalCode>
+      <ZipCode>78701</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>UHC123456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Health Plan</PlanType>
+      <GroupNumber>GRP001</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

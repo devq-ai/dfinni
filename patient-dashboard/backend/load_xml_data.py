@@ -33,10 +33,17 @@ def parse_patient_xml(file_path):
     # Extract basic info
     last_name = subscriber.find('x12:LastName', ns)
     first_name = subscriber.find('x12:FirstName', ns)
+    middle_name = subscriber.find('x12:MiddleName', ns)
     member_id = subscriber.find('x12:MemberIdentification', ns)
+    mrn = subscriber.find('x12:MRN', ns)
     dob = subscriber.find('x12:DateOfBirth', ns)
     gender = subscriber.find('x12:Gender', ns)
     ssn = subscriber.find('x12:SocialSecurityNumber', ns)
+    patient_status = subscriber.find('x12:PatientStatus', ns)
+    risk_level = subscriber.find('x12:RiskLevel', ns)
+    email = subscriber.find('x12:Email', ns)
+    phone = subscriber.find('x12:Phone', ns)
+    group_number = subscriber.find('x12:GroupNumber', ns)
     
     if None in [last_name, first_name, member_id, dob]:
         print(f"   ⚠️  Missing required fields in {file_path.name}")
@@ -44,18 +51,25 @@ def parse_patient_xml(file_path):
         
     last_name = last_name.text
     first_name = first_name.text
+    middle_name = middle_name.text if middle_name is not None else ""
     member_id = member_id.text
+    mrn = mrn.text if mrn is not None else f"MRN{member_id[:6]}"
     dob = dob.text
     gender = gender.text if gender is not None else "U"
     ssn = ssn.text if ssn is not None else "123-45-6789"
+    patient_status = patient_status.text if patient_status is not None else "active"
+    risk_level = risk_level.text if risk_level is not None else "Low"
+    email = email.text if email is not None else f"{first_name.lower()}.{last_name.lower()}@example.com"
+    phone = phone.text if phone is not None else "(555) 123-4567"
+    group_number = group_number.text if group_number is not None else "GRP001"
     
     # Extract address
     address_elem = subscriber.find('.//x12:Address', ns)
     if address_elem is not None:
-        street = address_elem.find('x12:AddressLine1', ns)
+        street = address_elem.find('x12:Street', ns)
         city = address_elem.find('x12:City', ns)
         state = address_elem.find('x12:State', ns)
-        zip_code = address_elem.find('x12:PostalCode', ns)
+        zip_code = address_elem.find('x12:ZipCode', ns)
         
         street = street.text if street is not None else "123 Main St"
         city = city.text if city is not None else "New York"
@@ -67,49 +81,58 @@ def parse_patient_xml(file_path):
         state = "NY"
         zip_code = "10001"
     
-    # Extract insurance info
-    eligibility = root.find('.//x12:EligibilityInfo', ns)
-    if eligibility is not None:
-        plan_type = eligibility.find('x12:PlanCoverageDescription', ns)
-        effective_date = eligibility.find('x12:EffectiveDate', ns)
-        eligibility_code = eligibility.find('x12:EligibilityStatusCode', ns)
+    # Extract insurance info from subscriber section first
+    insurance_elem = subscriber.find('.//x12:Insurance', ns)
+    if insurance_elem is not None:
+        ins_member_id = insurance_elem.find('x12:MemberId', ns)
+        ins_company = insurance_elem.find('x12:Company', ns)
+        ins_plan_type = insurance_elem.find('x12:PlanType', ns)
+        ins_group_number = insurance_elem.find('x12:GroupNumber', ns)
+        ins_effective_date = insurance_elem.find('x12:EffectiveDate', ns)
+        ins_termination_date = insurance_elem.find('x12:TerminationDate', ns)
         
-        plan_type = plan_type.text if plan_type is not None else "PPO"
-        effective_date = effective_date.text if effective_date is not None else "2025-01-01"
-        eligibility_code = eligibility_code.text if eligibility_code is not None else "1"
+        insurance_company = ins_company.text if ins_company is not None else "United Healthcare"
+        insurance_plan_type = ins_plan_type.text if ins_plan_type is not None else "PPO"
+        insurance_effective_date = ins_effective_date.text if ins_effective_date is not None else "2025-01-01"
+        insurance_termination_date = ins_termination_date.text if ins_termination_date is not None else "2025-12-31"
     else:
-        plan_type = "PPO"
-        effective_date = "2025-01-01"
-        eligibility_code = "1"
-    
-    # Determine status
-    status = "active" if eligibility_code == "1" else "inactive"
-    
-    # Calculate risk score based on age
-    try:
-        birth_date = datetime.strptime(dob, "%Y-%m-%d")
-        age = (datetime.now() - birth_date).days // 365
-        # Simple risk scoring based on age
-        if age > 65:
-            risk_score = 5
-        elif age > 50:
-            risk_score = 4
-        elif age > 40:
-            risk_score = 3
-        elif age > 30:
-            risk_score = 2
+        # Fall back to information source for company name
+        info_source = root.find('.//x12:InformationSource', ns)
+        if info_source is not None:
+            org_name = info_source.find('x12:OrganizationName', ns)
+            insurance_company = org_name.text if org_name is not None else "United Healthcare"
         else:
-            risk_score = 1
-    except:
-        risk_score = 2
+            insurance_company = "United Healthcare"
+        
+        # Extract from eligibility info
+        eligibility = root.find('.//x12:EligibilityInfo', ns)
+        if eligibility is not None:
+            plan_type = eligibility.find('x12:PlanCoverageDescription', ns)
+            effective_date = eligibility.find('x12:EffectiveDate', ns)
+            
+            insurance_plan_type = plan_type.text if plan_type is not None else "PPO"
+            insurance_effective_date = effective_date.text if effective_date is not None else "2025-01-01"
+        else:
+            insurance_plan_type = "PPO"
+            insurance_effective_date = "2025-01-01"
+        insurance_termination_date = "2025-12-31"
     
-    # Generate email and phone
-    email = f"{first_name.lower()}.{last_name.lower()}@example.com"
-    phone = "(555) 123-4567"
+    # Status comes from PatientStatus field, not eligibility code
+    status = patient_status.lower() if patient_status != "active" else "active"
+    
+    # Convert risk level to score
+    risk_score_map = {
+        "Low": 1,
+        "Medium": 3,
+        "High": 5
+    }
+    risk_score = risk_score_map.get(risk_level, 2)
     
     return {
         "first_name": first_name,
         "last_name": last_name,
+        "middle_name": middle_name,
+        "mrn": mrn,
         "date_of_birth": dob,
         "email": email,
         "phone": phone,
@@ -122,13 +145,16 @@ def parse_patient_xml(file_path):
             "zip": zip_code
         },
         "insurance": {
-            "provider": "United Healthcare",
+            "provider": insurance_company,
             "member_id": member_id,
-            "plan_type": plan_type,
-            "group_number": "GRP001",
-            "status": "active"
+            "plan_type": insurance_plan_type,
+            "group_number": group_number,
+            "status": "active",
+            "effective_date": insurance_effective_date,
+            "termination_date": insurance_termination_date
         },
         "status": status,
+        "risk_level": risk_level,
         "risk_score": risk_score,
         "primary_care_provider": "Dr. Smith",
         "last_visit": "2025-07-01",
@@ -142,8 +168,14 @@ async def load_data():
     # Connect to SurrealDB
     db = AsyncSurreal(SURREAL_URL)
     await db.connect()
-    await db.signin({"user": "root", "pass": "root"})
-    await db.use(NAMESPACE, DATABASE)
+    
+    # Try database auth first, then root auth
+    try:
+        await db.signin({"ns": NAMESPACE, "db": DATABASE, "user": "root", "pass": "root"})
+    except:
+        # Try root auth
+        await db.signin({"user": "root", "pass": "root"})
+        await db.use(NAMESPACE, DATABASE)
     
     print("=" * 80)
     print("LOADING PATIENT DATA FROM XML FILES")
@@ -195,11 +227,15 @@ async def load_data():
     
     print(f"\n   Total patients loaded: {patients_loaded}")
     
-    # 4. Generate some alerts for high-risk patients
-    print("\n4. Generating alerts for high-risk patients...")
-    high_risk_patients = await db.query("SELECT * FROM patient WHERE risk_score >= 4")
+    # 4. Generate various types of alerts
+    print("\n4. Generating alerts...")
     
+    # Clear existing alerts
+    await db.query("DELETE alert")
     alerts_created = 0
+    
+    # High-risk patient alerts
+    high_risk_patients = await db.query("SELECT * FROM patient WHERE risk_score >= 4")
     for patient in high_risk_patients[0]['result']:
         alert = {
             "patient_id": patient['id'],
@@ -214,17 +250,64 @@ async def load_data():
         await db.create("alert", alert)
         alerts_created += 1
     
-    print(f"   ✅ Created {alerts_created} alerts for high-risk patients")
+    # Urgent status patient alerts
+    urgent_patients = await db.query("SELECT * FROM patient WHERE status = 'urgent'")
+    for patient in urgent_patients[0]['result']:
+        alert = {
+            "patient_id": patient['id'],
+            "title": f"Urgent Patient Status",
+            "description": f"{patient['first_name']} {patient['last_name']} requires immediate attention",
+            "type": "clinical",
+            "severity": "critical",
+            "status": "new",
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        await db.create("alert", alert)
+        alerts_created += 1
+    
+    # Churned patient alerts
+    churned_patients = await db.query("SELECT * FROM patient WHERE status = 'churned' LIMIT 2")
+    for patient in churned_patients[0]['result']:
+        alert = {
+            "patient_id": patient['id'],
+            "title": f"Patient Churned",
+            "description": f"{patient['first_name']} {patient['last_name']} has churned - follow up required",
+            "type": "administrative",
+            "severity": "medium",
+            "status": "new",
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        await db.create("alert", alert)
+        alerts_created += 1
+    
+    print(f"   ✅ Created {alerts_created} alerts")
     
     # 5. Verify data
     print("\n5. Verifying loaded data...")
-    patient_count = await db.query("SELECT count() FROM patient")
-    user_count = await db.query("SELECT count() FROM user")
-    alert_count = await db.query("SELECT count() FROM alert")
+    all_patients = await db.query("SELECT * FROM patient")
+    all_users = await db.query("SELECT * FROM user")
+    all_alerts = await db.query("SELECT * FROM alert")
     
-    print(f"   📊 Patients: {patient_count[0]['result'][0]['count']}")
-    print(f"   📊 Users: {user_count[0]['result'][0]['count']}")
-    print(f"   📊 Alerts: {alert_count[0]['result'][0]['count']}")
+    patient_count = len(all_patients[0]['result']) if all_patients and all_patients[0]['result'] else 0
+    user_count = len(all_users[0]['result']) if all_users and all_users[0]['result'] else 0
+    alert_count = len(all_alerts[0]['result']) if all_alerts and all_alerts[0]['result'] else 0
+    
+    print(f"   📊 Patients: {patient_count}")
+    print(f"   📊 Users: {user_count}")
+    print(f"   📊 Alerts: {alert_count}")
+    
+    # Show patient status breakdown
+    status_counts = {}
+    if all_patients and all_patients[0]['result']:
+        for patient in all_patients[0]['result']:
+            status = patient.get('status', 'unknown')
+            status_counts[status] = status_counts.get(status, 0) + 1
+    
+    print("\n   Patient Status Breakdown:")
+    for status, count in status_counts.items():
+        print(f"      - {status}: {count}")
     
     print("\n" + "=" * 80)
     print("DATA LOADING COMPLETE")

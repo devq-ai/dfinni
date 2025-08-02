@@ -27,15 +27,29 @@
     <FirstName>Susan</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>CIG103456789</MemberIdentification>
+    <MRN>MRN018</MRN>
     <SocialSecurityNumber>620-87-3865</SocialSecurityNumber>
     <DateOfBirth>1973-05-22</DateOfBirth>
     <Gender>F</Gender>
+    <GroupNumber>GRP018</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>susan.martin@email.com</Email>
+    <Phone>(555) 890-1234</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>San Francisco</City>
       <State>CA</State>
-      <PostalCode>94102</PostalCode>
+      <ZipCode>94102</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>CIG103456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP018</GroupNumber>
+      <EffectiveDate>2025-04-24</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

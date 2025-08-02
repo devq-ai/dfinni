@@ -25,17 +25,31 @@
     <EntityTypeQualifier>1</EntityTypeQualifier>
     <LastName>Davis</LastName>
     <FirstName>Robert</FirstName>
+    <MiddleName>Lee</MiddleName>
     <MemberIdentification>KAI521345678</MemberIdentification>
+    <MRN>MRN006</MRN>
     <SocialSecurityNumber>678-90-1234</SocialSecurityNumber>
     <DateOfBirth>1971-09-14</DateOfBirth>
     <Gender>M</Gender>
     <GroupNumber>GRP006</GroupNumber>
+    <PatientStatus>onboarding</PatientStatus>
+    <RiskLevel>Medium</RiskLevel>
+    <Email>robert.davis@email.com</Email>
+    <Phone>(555) 678-9012</Phone>
     <Address>
-      <AddressLine1>303 Birch Road</AddressLine1>
+      <Street>303 Birch Road</Street>
       <City>Fort Worth</City>
       <State>TX</State>
-      <PostalCode>76101</PostalCode>
+      <ZipCode>76101</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>KAI521345678</MemberId>
+      <Company>Kaiser Permanente</Company>
+      <PlanType>Traditional Indemnity</PlanType>
+      <GroupNumber>GRP006</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

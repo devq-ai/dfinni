@@ -27,17 +27,29 @@
     <FirstName>Jessica</FirstName>
     <MiddleName>Ann</MiddleName>
     <MemberIdentification>ANT475987654</MemberIdentification>
+    <MRN>MRN007</MRN>
     <SocialSecurityNumber>789-01-2345</SocialSecurityNumber>
     <DateOfBirth>1995-02-03</DateOfBirth>
     <Gender>F</Gender>
     <GroupNumber>GRP007</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>jessica.miller@email.com</Email>
+    <Phone>(555) 789-0123</Phone>
     <Address>
-      <AddressLine1>404 Willow Circle</AddressLine1>
-      <AddressLine2>Apt 12</AddressLine2>
+      <Street>404 Willow Circle, Apt 12</Street>
       <City>El Paso</City>
       <State>TX</State>
-      <PostalCode>79901</PostalCode>
+      <ZipCode>79901</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>ANT475987654</MemberId>
+      <Company>Anthem BCBS</Company>
+      <PlanType>PPO Health Plan</PlanType>
+      <GroupNumber>GRP007</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

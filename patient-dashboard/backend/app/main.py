@@ -35,6 +35,7 @@ from app.cache.surreal_cache_manager import initialize_cache, close_cache
 from app.api.v1 import (
     auth,
     patients,
+    providers,
     users,
     dashboard,
     alerts,
@@ -43,7 +44,12 @@ from app.api.v1 import (
     reports,
     webhooks,
     chat,
+    debug,
 )
+from app.api.v1.test_clerk import router as test_clerk
+from app.api.v1.test_dashboard import router as test_dashboard
+from app.api.v1.test_patients import router as test_patients
+from app.api.v1.test_patients_raw import router as test_patients_raw
 
 # Get configuration
 settings = get_settings()
@@ -298,6 +304,12 @@ app.include_router(
 )
 
 app.include_router(
+    providers,
+    prefix=f"{API_V1_PREFIX}/providers",
+    tags=["Providers"],
+)
+
+app.include_router(
     users,
     prefix=f"{API_V1_PREFIX}/users",
     tags=["Users"],
@@ -340,9 +352,39 @@ app.include_router(
 )
 
 app.include_router(
+    debug,
+    prefix=f"{API_V1_PREFIX}/debug",
+    tags=["Debug"],
+)
+
+app.include_router(
     chat,
     prefix=f"{API_V1_PREFIX}/chat",
     tags=["AI Chat"],
+)
+
+app.include_router(
+    test_clerk,
+    prefix=f"{API_V1_PREFIX}",
+    tags=["Test"],
+)
+
+app.include_router(
+    test_dashboard,
+    prefix=f"{API_V1_PREFIX}",
+    tags=["Test Dashboard"],
+)
+
+app.include_router(
+    test_patients,
+    prefix=f"{API_V1_PREFIX}",
+    tags=["Test Patients"],
+)
+
+app.include_router(
+    test_patients_raw,
+    prefix=f"{API_V1_PREFIX}",
+    tags=["Test Patients Raw"],
 )
 
 

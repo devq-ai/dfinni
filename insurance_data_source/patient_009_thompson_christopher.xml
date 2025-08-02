@@ -27,15 +27,29 @@
     <FirstName>Christopher</FirstName>
     <MiddleName></MiddleName>
     <MemberIdentification>AET923456789</MemberIdentification>
+    <MRN>MRN009</MRN>
     <SocialSecurityNumber>245-95-8356</SocialSecurityNumber>
     <DateOfBirth>1975-09-23</DateOfBirth>
     <Gender>M</Gender>
+    <GroupNumber>GRP009</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Medium</RiskLevel>
+    <Email>christopher.thompson@email.com</Email>
+    <Phone>(555) 901-2345</Phone>
     <Address>
-      <AddressLine>123 Main St</AddressLine>
+      <Street>123 Main St</Street>
       <City>Phoenix</City>
       <State>AZ</State>
-      <PostalCode>85001</PostalCode>
+      <ZipCode>85001</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>AET923456789</MemberId>
+      <Company>United Healthcare</Company>
+      <PlanType>PPO Standard Plan</PlanType>
+      <GroupNumber>GRP009</GroupNumber>
+      <EffectiveDate>2025-05-28</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityCode>1</EligibilityCode>

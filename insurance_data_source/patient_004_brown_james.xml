@@ -25,18 +25,31 @@
     <EntityTypeQualifier>1</EntityTypeQualifier>
     <LastName>Brown</LastName>
     <FirstName>James</FirstName>
+    <MiddleName>William</MiddleName>
     <MemberIdentification>CIG623456789</MemberIdentification>
+    <MRN>MRN004</MRN>
     <SocialSecurityNumber>456-78-9012</SocialSecurityNumber>
     <DateOfBirth>1965-12-30</DateOfBirth>
     <Gender>M</Gender>
     <GroupNumber>GRP004</GroupNumber>
+    <PatientStatus>churned</PatientStatus>
+    <RiskLevel>High</RiskLevel>
+    <Email>james.brown@email.com</Email>
+    <Phone>(555) 456-7890</Phone>
     <Address>
-      <AddressLine1>101 Cedar Court</AddressLine1>
-      <AddressLine2>Unit 5A</AddressLine2>
+      <Street>101 Cedar Court, Unit 5A</Street>
       <City>Dallas</City>
       <State>TX</State>
-      <PostalCode>75201</PostalCode>
+      <ZipCode>75201</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>CIG623456789</MemberId>
+      <Company>Cigna Health</Company>
+      <PlanType>High Deductible Health Plan</PlanType>
+      <GroupNumber>GRP004</GroupNumber>
+      <EffectiveDate>2024-01-01</EffectiveDate>
+      <TerminationDate>2024-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>6</EligibilityStatusCode>

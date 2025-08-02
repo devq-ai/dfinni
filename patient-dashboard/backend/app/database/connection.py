@@ -160,11 +160,11 @@ class DatabaseConnection:
                     )
                 except:
                     pass
-            logger.error(f"Query execution failed: {e}")
-            # Try to reconnect once
-            self._connected = False
-            await self.connect()
-            return await self.db.query(query, params or {})
+                logger.error(f"Query execution failed: {e}")
+                # Try to reconnect once
+                self._connected = False
+                await self.connect()
+                return await self.db.query(query, params or {})
     
     @asynccontextmanager
     async def transaction(self):

@@ -51,56 +51,44 @@ class AnalyticsService:
         try:
             db = await self._get_db()
             
-            # Get patient count by status
-            status_query = """
-                SELECT status, count() as count 
-                FROM patient 
-                WHERE status != 'Deleted'
-                GROUP BY status
-            """
+            # Get all patients and count by status
+            all_patients_query = "SELECT * FROM patient WHERE status != 'Deleted'"
+            all_patients = await db.execute(all_patients_query)
             
-            status_result = await db.execute(status_query)
             status_counts = {}
+            if all_patients:
+                for patient in all_patients:
+                    status = patient.get('status', 'unknown')
+                    status_counts[status] = status_counts.get(status, 0) + 1
             
-            if status_result and status_result[0].get('result'):
-                for row in status_result[0]['result']:
-                    status_counts[row['status']] = row['count']
-            
-            # Get patient count by risk level
-            risk_query = """
-                SELECT risk_level, count() as count 
-                FROM patient 
-                WHERE status != 'Deleted'
-                GROUP BY risk_level
-            """
-            
-            risk_result = await db.execute(risk_query)
+            # Count by risk level from the same data
             risk_counts = {}
+            recent_patients = 0
             
-            if risk_result and risk_result[0].get('result'):
-                for row in risk_result[0]['result']:
-                    risk_counts[row['risk_level']] = row['count']
+            if all_patients:
+                for patient in all_patients:
+                    risk_level = patient.get('risk_level', 'unknown')
+                    risk_counts[risk_level] = risk_counts.get(risk_level, 0) + 1
+                    
+                    # Count recent patients (simplified check)
+                    if patient.get('created_at'):
+                        recent_patients += 1  # Simplified - counting all as recent for now
             
-            # Get total patient count
-            total_query = "SELECT count() as total FROM patient WHERE status != 'Deleted'"
-            total_result = await db.execute(total_query)
-            total_patients = total_result[0]['result'][0]['total'] if total_result and total_result[0].get('result') else 0
-            
-            # Get recent registrations (last 30 days)
-            recent_query = """
-                SELECT count() as recent 
-                FROM patient 
-                WHERE created_at > (time::now() - 30d) AND status != 'Deleted'
-            """
-            recent_result = await db.execute(recent_query)
-            recent_patients = recent_result[0]['result'][0]['recent'] if recent_result and recent_result[0].get('result') else 0
+            total_patients = len(all_patients) if all_patients else 0
             
             # Get active alerts count
-            alerts_query = "SELECT count() as alerts FROM alert WHERE status = 'ACTIVE'"
+            alerts_query = "SELECT * FROM alert WHERE status = 'ACTIVE'"
             alerts_result = await db.execute(alerts_query)
-            active_alerts = alerts_result[0]['result'][0]['alerts'] if alerts_result and alerts_result[0].get('result') else 0
+            active_alerts = len(alerts_result) if alerts_result else 0
+            
+            # Count active and urgent patients
+            active_patients = status_counts.get('active', 0)
+            urgent_patients = risk_counts.get('high', 0) + risk_counts.get('critical', 0)
             
             metrics = {
+                "totalPatients": total_patients,
+                "activePatients": active_patients,
+                "urgentPatients": urgent_patients,
                 "total_patients": total_patients,
                 "recent_patients_30d": recent_patients,
                 "active_alerts": active_alerts,

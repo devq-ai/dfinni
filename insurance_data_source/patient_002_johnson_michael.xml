@@ -25,18 +25,31 @@
     <EntityTypeQualifier>1</EntityTypeQualifier>
     <LastName>Johnson</LastName>
     <FirstName>Michael</FirstName>
+    <MiddleName></MiddleName>
     <MemberIdentification>AET987654321</MemberIdentification>
+    <MRN>MRN002</MRN>
     <SocialSecurityNumber>234-56-7890</SocialSecurityNumber>
     <DateOfBirth>1978-11-22</DateOfBirth>
     <Gender>M</Gender>
     <GroupNumber>GRP002</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>michael.johnson@email.com</Email>
+    <Phone>(555) 234-5678</Phone>
     <Address>
-      <AddressLine1>456 Oak Avenue</AddressLine1>
-      <AddressLine2>Apt 2B</AddressLine2>
+      <Street>456 Oak Avenue, Apt 2B</Street>
       <City>Austin</City>
       <State>TX</State>
-      <PostalCode>78702</PostalCode>
+      <ZipCode>78702</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>AET987654321</MemberId>
+      <Company>Aetna Insurance</Company>
+      <PlanType>HMO Select</PlanType>
+      <GroupNumber>GRP002</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

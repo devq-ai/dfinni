@@ -27,17 +27,29 @@
     <FirstName>Joshua</FirstName>
     <MiddleName>William</MiddleName>
     <MemberIdentification>CIG623012345</MemberIdentification>
+    <MRN>MRN020</MRN>
     <SocialSecurityNumber>012-34-5678</SocialSecurityNumber>
     <DateOfBirth>1994-05-29</DateOfBirth>
     <Gender>M</Gender>
     <GroupNumber>GRP020</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>joshua.robinson@email.com</Email>
+    <Phone>(555) 012-3456</Phone>
     <Address>
-      <AddressLine1>888 Oak Avenue</AddressLine1>
-      <AddressLine2>Apt 6B</AddressLine2>
+      <Street>888 Oak Avenue, Apt 6B</Street>
       <City>Plano</City>
       <State>TX</State>
-      <PostalCode>75024</PostalCode>
+      <ZipCode>75024</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>CIG623012345</MemberId>
+      <Company>Cigna Health</Company>
+      <PlanType>Traditional Indemnity</PlanType>
+      <GroupNumber>GRP020</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

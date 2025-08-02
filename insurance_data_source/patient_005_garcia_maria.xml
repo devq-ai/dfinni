@@ -27,16 +27,29 @@
     <FirstName>Maria</FirstName>
     <MiddleName>Isabel</MiddleName>
     <MemberIdentification>HUM615234567</MemberIdentification>
+    <MRN>MRN005</MRN>
     <SocialSecurityNumber>567-89-0123</SocialSecurityNumber>
     <DateOfBirth>1988-05-17</DateOfBirth>
     <Gender>F</Gender>
     <GroupNumber>GRP015</GroupNumber>
+    <PatientStatus>active</PatientStatus>
+    <RiskLevel>Low</RiskLevel>
+    <Email>maria.garcia@email.com</Email>
+    <Phone>(555) 567-8901</Phone>
     <Address>
-      <AddressLine1>202 Elm Way</AddressLine1>
+      <Street>202 Elm Way</Street>
       <City>San Antonio</City>
       <State>TX</State>
-      <PostalCode>78201</PostalCode>
+      <ZipCode>78201</ZipCode>
     </Address>
+    <Insurance>
+      <MemberId>HUM615234567</MemberId>
+      <Company>Humana Inc</Company>
+      <PlanType>POS Choice</PlanType>
+      <GroupNumber>GRP015</GroupNumber>
+      <EffectiveDate>2025-01-01</EffectiveDate>
+      <TerminationDate>2025-12-31</TerminationDate>
+    </Insurance>
   </Subscriber>
   <EligibilityInfo>
     <EligibilityStatusCode>1</EligibilityStatusCode>

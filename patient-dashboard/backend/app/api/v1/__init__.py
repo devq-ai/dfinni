@@ -6,11 +6,13 @@ from fastapi import APIRouter
 # Import actual routers where implemented
 from .auth import router as auth
 from .patients import router as patients
+from .providers import router as providers
 from .dashboard import router as dashboard
 from .chat import router as chat
 from .alerts import router as alerts
 from .users import router as users
 from .analytics import router as analytics
+from .debug import router as debug
 
 # Create stub routers for unimplemented endpoints
 insurance = APIRouter()

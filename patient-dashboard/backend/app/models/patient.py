@@ -9,11 +9,11 @@ import re
 
 class PatientStatus(str, Enum):
     """Patient status workflow states."""
-    INQUIRY = "Inquiry"
-    ONBOARDING = "Onboarding"
-    ACTIVE = "Active"
-    CHURNED = "Churned"
-    DELETED = "Deleted"
+    INQUIRY = "inquiry"
+    ONBOARDING = "onboarding"
+    ACTIVE = "active"
+    CHURNED = "churned"
+    URGENT = "urgent"
 
 class RiskLevel(str, Enum):
     """Patient risk levels."""
@@ -32,7 +32,7 @@ class Address(BaseModel):
     street: str = Field(..., max_length=200)
     city: str = Field(..., max_length=100)
     state: str = Field(..., max_length=2)
-    zip_code: str = Field(..., max_length=10)
+    zip: str = Field(..., max_length=10)
     
     @field_validator('state')
     def validate_state(cls, v):
@@ -40,7 +40,7 @@ class Address(BaseModel):
             raise ValueError('State must be 2 uppercase letters')
         return v
     
-    @field_validator('zip_code')
+    @field_validator('zip')
     def validate_zip_code(cls, v):
         # Validate US postal code (5 digits or 5+4 format)
         if not re.match(r'^\d{5}(-\d{4})?$', v):
