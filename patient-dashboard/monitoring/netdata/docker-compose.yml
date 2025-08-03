@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Netdata - Real-time performance and health monitoring
+  netdata:
+    image: netdata/netdata:latest
+    container_name: patient-dashboard-netdata
+    hostname: patient-dashboard-monitor
+    ports:
+      - "19999:19999"
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - netdata_config:/etc/netdata
+      - netdata_lib:/var/lib/netdata
+      - netdata_cache:/var/cache/netdata
+    environment:
+      - NETDATA_CLAIMED_ID=${NETDATA_CLAIMED_ID:-}
+      - NETDATA_CLAIMED_URL=${NETDATA_CLAIMED_URL:-}
+      - NETDATA_CLAIMED_ROOMS=${NETDATA_CLAIMED_ROOMS:-}
+      - NETDATA_CLAIM_TOKEN=${NETDATA_CLAIM_TOKEN:-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    restart: unless-stopped
+    networks:
+      - patient_dashboard_network
+
+  # Portainer - Docker management UI
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: patient-dashboard-portainer
+    ports:
+      - "9000:9000"
+      - "8000:8000"  # Alternative if main port is used
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    restart: unless-stopped
+    networks:
+      - patient_dashboard_network
+
+volumes:
+  netdata_config:
+  netdata_lib:
+  netdata_cache:
+  portainer_data:
+
+networks:
+  patient_dashboard_network:
+    external: true
