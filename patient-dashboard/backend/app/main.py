@@ -21,6 +21,7 @@ from app.core.middleware import (
     SecurityHeadersMiddleware,
     RateLimitMiddleware,
     RequestValidationMiddleware,
+    EnhancedRateLimitMiddleware
 )
 from app.middleware.audit_middleware import AuditMiddleware, AuditedRoute
 from app.middleware.metrics_middleware import MetricsMiddleware
@@ -166,10 +167,9 @@ app.add_middleware(MetricsMiddleware)  # Add metrics middleware
 app.add_middleware(CacheMiddleware)  # Add cache middleware for performance
 
 if settings.RATE_LIMIT_ENABLED:
-    app.add_middleware(
-        RateLimitMiddleware,
-        requests_per_minute=settings.RATE_LIMIT_REQUESTS
-    )
+    # Use enhanced rate limiter with distributed storage
+    from app.core.rate_limiter import RateLimitMiddleware as EnhancedRateLimiter
+    app.add_middleware(EnhancedRateLimiter)
 
 
 # Exception handlers

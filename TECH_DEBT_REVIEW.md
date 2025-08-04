@@ -240,3 +240,6 @@
   - Fixed ORDER BY requiring field in SELECT clause
   - Removed unnecessary GROUP BY from count queries
 - All 4 phases of Production Proposal now COMPLETE
+- Standardized on Clerk authentication, removed all BetterAuth code
+- Implemented distributed rate limiting with SurrealDB backend
+- Enhanced auth endpoint security with strict rate limits

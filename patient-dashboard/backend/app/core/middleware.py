@@ -13,6 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import structlog
 
 from app.core.exceptions import RateLimitException
+from app.core.rate_limiter import RateLimitMiddleware as EnhancedRateLimitMiddleware
 
 logger = structlog.get_logger()
 

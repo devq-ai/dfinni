@@ -164,3 +164,15 @@ DEFINE EVENT patient_updated ON TABLE patient WHEN $event = "UPDATE" THEN (
 DEFINE EVENT patient_status_changed ON TABLE patient WHEN $event = "UPDATE" AND $before.status != $after.status THEN (
     fn::log_status_change($this.id, $before.status, $after.status, $after.status_changed_by)
 );
+
+-- ============================================
+-- RATE LIMITING
+-- ============================================
+
+-- Rate limit entries table
+DEFINE TABLE rate_limit_entry SCHEMALESS;
+
+-- Indexes for efficient rate limit queries
+DEFINE INDEX rate_limit_bucket_idx ON TABLE rate_limit_entry COLUMNS bucket;
+DEFINE INDEX rate_limit_timestamp_idx ON TABLE rate_limit_entry COLUMNS timestamp;
+DEFINE INDEX rate_limit_composite_idx ON TABLE rate_limit_entry COLUMNS bucket, timestamp;
