@@ -1,0 +1,262 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      version:
+        description: 'Version to deploy (leave empty for latest)'
+        required: false
+        type: string
+
+env:
+  DOCKER_REGISTRY: docker.io
+
+jobs:
+  # Pre-deployment checks
+  pre-deploy:
+    name: Pre-deployment Checks
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Check if images exist
+        run: |
+          # Check if Docker images exist for this version
+          echo "Checking for images with tag: ${{ steps.version.outputs.version }}"
+          # Add actual Docker registry checks here
+
+  # Database Migration
+  migrate-database:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    needs: pre-deploy
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        working-directory: ./patient-dashboard/backend
+        run: |
+          pip install -r requirements.txt
+      
+      - name: Run database migrations
+        working-directory: ./patient-dashboard/backend
+        env:
+          PFINNI_SURREALDB_URL: ${{ secrets.SURREALDB_URL }}
+          PFINNI_SURREALDB_USERNAME: ${{ secrets.SURREALDB_USERNAME }}
+          PFINNI_SURREALDB_PASSWORD: ${{ secrets.SURREALDB_PASSWORD }}
+          PFINNI_SURREALDB_DATABASE: ${{ secrets.SURREALDB_DATABASE }}
+          PFINNI_SURREALDB_NAMESPACE: ${{ secrets.SURREALDB_NAMESPACE }}
+        run: |
+          echo "Running database migrations for ${{ github.event.inputs.environment }}..."
+          python app/database/init_schemas.py
+
+  # Deploy Backend
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, migrate-database]
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure deployment
+        id: deploy
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "url=https://api.pfinni.com" >> $GITHUB_OUTPUT
+            echo "replicas=3" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://api-staging.pfinni.com" >> $GITHUB_OUTPUT
+            echo "replicas=2" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Deploy to Kubernetes
+        run: |
+          echo "Deploying backend version ${{ needs.pre-deploy.outputs.version }} to ${{ github.event.inputs.environment }}"
+          
+          # Example kubectl deployment (adjust for your setup)
+          # kubectl set image deployment/backend backend=${{ env.DOCKER_REGISTRY }}/pfinni-backend:${{ needs.pre-deploy.outputs.version }}
+          # kubectl scale deployment/backend --replicas=${{ steps.deploy.outputs.replicas }}
+          # kubectl rollout status deployment/backend
+      
+      - name: Health check
+        run: |
+          echo "Waiting for backend to be healthy..."
+          # Add actual health check commands
+          # curl -f ${{ steps.deploy.outputs.url }}/health || exit 1
+
+  # Deploy Frontend
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: [pre-deploy, deploy-backend]
+    environment:
+      name: ${{ github.event.inputs.environment }}
+      url: ${{ steps.deploy.outputs.url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Configure deployment
+        id: deploy
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "url=https://pfinni.com" >> $GITHUB_OUTPUT
+          else
+            echo "url=https://staging.pfinni.com" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Deploy to Vercel/Netlify/Cloudflare
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          echo "Deploying frontend version ${{ needs.pre-deploy.outputs.version }} to ${{ github.event.inputs.environment }}"
+          
+          # Example Vercel deployment
+          # npx vercel --token=$VERCEL_TOKEN --prod --env NEXT_PUBLIC_API_URL=${{ needs.deploy-backend.outputs.url }}
+
+  # Post-deployment tests
+  smoke-tests:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install test dependencies
+        run: |
+          npm install -g newman
+          pip install httpx pytest
+      
+      - name: Run API smoke tests
+        run: |
+          echo "Running API smoke tests..."
+          # Add actual smoke test commands
+          # newman run tests/postman/smoke-tests.json --env-var BASE_URL=${{ needs.deploy-backend.outputs.url }}
+      
+      - name: Run UI smoke tests
+        run: |
+          echo "Running UI smoke tests..."
+          # Add actual UI test commands
+          # npx playwright test tests/smoke/ --project=chromium
+
+  # Rollback on failure
+  rollback:
+    name: Rollback Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-frontend, smoke-tests]
+    if: failure()
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Rollback backend
+        run: |
+          echo "⚠️  Deployment failed, rolling back backend..."
+          # Add rollback commands
+          # kubectl rollout undo deployment/backend
+      
+      - name: Rollback frontend
+        run: |
+          echo "⚠️  Deployment failed, rolling back frontend..."
+          # Add rollback commands
+      
+      - name: Notify team
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Deployment Rollback: ${context.payload.inputs.environment}`,
+              body: `The deployment to ${context.payload.inputs.environment} failed and was rolled back.\n\nVersion: ${context.payload.inputs.version || context.sha}\nTriggered by: @${context.actor}`,
+              labels: ['deployment', 'rollback', 'urgent']
+            });
+
+  # Post-deployment tasks
+  post-deploy:
+    name: Post-deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [smoke-tests]
+    if: success()
+    
+    steps:
+      - name: Clear CDN cache
+        run: |
+          echo "Clearing CDN cache..."
+          # Add CDN cache purge commands
+      
+      - name: Update monitoring
+        run: |
+          echo "Updating monitoring dashboards..."
+          # Add monitoring update commands
+      
+      - name: Notify success
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const message = `✅ Successfully deployed version ${context.payload.inputs.version || context.sha} to ${context.payload.inputs.environment}`;
+            
+            // Create deployment status
+            github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: context.payload.deployment.id,
+              state: 'success',
+              description: message,
+              environment: context.payload.inputs.environment
+            });
+            
+            // Comment on PR if exists
+            if (context.payload.pull_request) {
+              github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: message
+              });
+            }

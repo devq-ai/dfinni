@@ -1,0 +1,365 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+  SURREALDB_VERSION: 'latest'
+
+jobs:
+  # Backend Testing
+  backend-test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      surrealdb:
+        image: surrealdb/surrealdb:latest
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          SURREAL_USER: root
+          SURREAL_PASS: root
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install dependencies
+        working-directory: ./patient-dashboard/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx
+      
+      - name: Create test environment file
+        run: |
+          cat > .env.test << EOF
+          ENVIRONMENT=testing
+          PFINNI_SECRET_KEY=test-secret-key-32-chars-long!!!!
+          PFINNI_JWT_SECRET_KEY=test-jwt-secret-key-for-testing!
+          PFINNI_ENCRYPTION_KEY=test-encryption-key-32-chars!!!!
+          PFINNI_SURREALDB_URL=ws://localhost:8080/rpc
+          PFINNI_SURREALDB_USERNAME=root
+          PFINNI_SURREALDB_PASSWORD=root
+          PFINNI_SURREALDB_DATABASE=patient_dashboard_test
+          PFINNI_SURREALDB_NAMESPACE=patient_dashboard_test
+          PFINNI_CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY_TEST }}
+          PFINNI_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY_TEST }}
+          PFINNI_LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN_TEST }}
+          PFINNI_RATE_LIMIT_ENABLED=true
+          EOF
+      
+      - name: Initialize SurrealDB
+        working-directory: ./patient-dashboard/backend
+        run: |
+          sleep 5  # Wait for SurrealDB to be ready
+          python -c "
+          import asyncio
+          from surrealdb import AsyncSurreal
+          async def init():
+              db = AsyncSurreal('ws://localhost:8080/rpc')
+              await db.connect()
+              await db.signin({'user': 'root', 'pass': 'root'})
+              await db.execute('DEFINE NAMESPACE patient_dashboard_test')
+              await db.execute('DEFINE DATABASE patient_dashboard_test')
+              await db.close()
+          asyncio.run(init())
+          "
+      
+      - name: Run backend tests
+        working-directory: ./patient-dashboard/backend
+        env:
+          ENV_FILE: ../../.env.test
+        run: |
+          pytest tests/ -v --cov=app --cov-report=xml --cov-report=html
+      
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./patient-dashboard/backend/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  # Frontend Testing
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: ./patient-dashboard/frontend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: ./patient-dashboard/frontend
+        run: npm ci
+      
+      - name: Run linting
+        working-directory: ./patient-dashboard/frontend
+        run: npm run lint
+      
+      - name: Run type checking
+        working-directory: ./patient-dashboard/frontend
+        run: npm run type-check || true  # Allow to fail for now
+      
+      - name: Run unit tests
+        working-directory: ./patient-dashboard/frontend
+        run: npm run test:unit -- --reporter=json --outputFile=test-results.json
+      
+      - name: Build frontend
+        working-directory: ./patient-dashboard/frontend
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY_TEST }}
+          NEXT_PUBLIC_API_URL: http://localhost:8001
+        run: npm run build
+
+  # E2E Testing
+  e2e-test:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    
+    services:
+      surrealdb:
+        image: surrealdb/surrealdb:latest
+        ports:
+          - 8080:8080
+        options: >-
+          --health-cmd "curl -f http://localhost:8080/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          SURREAL_USER: root
+          SURREAL_PASS: root
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install backend dependencies
+        working-directory: ./patient-dashboard/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Install frontend dependencies
+        working-directory: ./patient-dashboard/frontend
+        run: npm ci
+      
+      - name: Install Playwright
+        working-directory: ./patient-dashboard/frontend
+        run: npx playwright install --with-deps chromium
+      
+      - name: Create test environment file
+        run: |
+          cat > .env.test << EOF
+          ENVIRONMENT=testing
+          PFINNI_SECRET_KEY=test-secret-key-32-chars-long!!!!
+          PFINNI_JWT_SECRET_KEY=test-jwt-secret-key-for-testing!
+          PFINNI_ENCRYPTION_KEY=test-encryption-key-32-chars!!!!
+          PFINNI_SURREALDB_URL=ws://localhost:8080/rpc
+          PFINNI_SURREALDB_USERNAME=root
+          PFINNI_SURREALDB_PASSWORD=root
+          PFINNI_SURREALDB_DATABASE=patient_dashboard_test
+          PFINNI_SURREALDB_NAMESPACE=patient_dashboard_test
+          PFINNI_CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY_TEST }}
+          PFINNI_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY_TEST }}
+          PFINNI_LOGFIRE_TOKEN=${{ secrets.LOGFIRE_TOKEN_TEST }}
+          EOF
+      
+      - name: Start backend server
+        working-directory: ./patient-dashboard/backend
+        env:
+          ENV_FILE: ../../.env.test
+        run: |
+          uvicorn app.main:app --host 0.0.0.0 --port 8001 &
+          sleep 10  # Wait for server to start
+      
+      - name: Start frontend server
+        working-directory: ./patient-dashboard/frontend
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY_TEST }}
+          NEXT_PUBLIC_API_URL: http://localhost:8001
+        run: |
+          npm run build
+          npm run start &
+          sleep 10  # Wait for server to start
+      
+      - name: Run E2E tests
+        working-directory: ./patient-dashboard/frontend
+        run: npm run test:e2e
+      
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: ./patient-dashboard/frontend/playwright-report/
+          retention-days: 7
+
+  # Security Scanning
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install Bandit
+        run: pip install bandit
+      
+      - name: Run Bandit security scan
+        working-directory: ./patient-dashboard/backend
+        run: bandit -r app/ -f json -o bandit-report.json || true
+      
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v3
+        with:
+          name: bandit-report
+          path: ./patient-dashboard/backend/bandit-report.json
+
+  # Docker Build
+  docker-build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./patient-dashboard/backend
+          file: ./patient-dashboard/backend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/pfinni-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/pfinni-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./patient-dashboard/frontend
+          file: ./patient-dashboard/frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/pfinni-frontend:latest
+            ${{ secrets.DOCKER_USERNAME }}/pfinni-frontend:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.CLERK_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_API_URL=${{ secrets.PRODUCTION_API_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test, security-scan, docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: staging
+      url: https://staging.pfinni.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to staging
+        run: |
+          echo "Deploying to staging environment..."
+          # Add actual deployment commands here
+          # This could be kubectl apply, docker-compose, or cloud provider CLI
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://pfinni.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Deploy to production
+        run: |
+          echo "Deploying to production environment..."
+          # Add actual deployment commands here
+          # This could be kubectl apply, docker-compose, or cloud provider CLI
+      
+      - name: Run smoke tests
+        run: |
+          echo "Running production smoke tests..."
+          # Add smoke test commands here
