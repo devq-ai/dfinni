@@ -243,3 +243,6 @@
 - Standardized on Clerk authentication, removed all BetterAuth code
 - Implemented distributed rate limiting with SurrealDB backend
 - Enhanced auth endpoint security with strict rate limits
+- Created comprehensive GitHub Actions CI/CD workflows
+- Added automated testing, security scanning, and deployment pipelines
+- Implemented PR checks, dependency updates, and release automation
