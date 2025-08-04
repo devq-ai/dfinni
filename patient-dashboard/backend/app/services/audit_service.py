@@ -124,7 +124,7 @@ class AuditService:
         """
         
         try:
-            await self.db.query(query)
+            await self.db.execute(query)
             logfire.info("Audit table created successfully")
         except Exception as e:
             logfire.error("Failed to create audit table", error=str(e))
@@ -207,10 +207,20 @@ class AuditService:
             if not self.db:
                 await self.initialize()
             
-            result = await self.db.create(
-                self.audit_table,
-                entry.dict(exclude_none=True)
-            )
+            # Convert entry to dict and create SQL query
+            entry_data = entry.dict(exclude_none=True)
+            fields = []
+            params = {}
+            for key, value in entry_data.items():
+                fields.append(f"{key} = ${key}")
+                params[key] = value
+            
+            query = f"""
+                CREATE {self.audit_table} SET
+                    {', '.join(fields)}
+            """
+            
+            result = await self.db.execute(query, params)
             
             if result and len(result) > 0:
                 entry.id = result[0].get('id')
@@ -362,7 +372,7 @@ class AuditService:
         """
         
         try:
-            results = await self.db.query(query)
+            results = await self.db.execute(query)
             return [AuditEntry(**log) for log in results]
         except Exception as e:
             logfire.error("Failed to query audit logs", error=str(e))

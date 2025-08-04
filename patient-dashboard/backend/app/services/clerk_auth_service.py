@@ -26,8 +26,19 @@ class ClerkAuthService:
         # Decode the base64 part of the publishable key
         import base64
         try:
+            # Check if key has the expected format
+            if not self.clerk_publishable_key or '_' not in self.clerk_publishable_key:
+                logfire.warning("Invalid Clerk publishable key format", key_preview=self.clerk_publishable_key[:20] if self.clerk_publishable_key else "None")
+                return "talented-kid-76.clerk.accounts.dev"
+                
+            # Split and check if we have enough parts
+            key_parts = self.clerk_publishable_key.split('_', 2)
+            if len(key_parts) < 3:
+                logfire.warning("Clerk key doesn't have expected format", parts=len(key_parts))
+                return "talented-kid-76.clerk.accounts.dev"
+                
             # Remove 'pk_test_' or 'pk_live_' prefix
-            key_part = self.clerk_publishable_key.split('_', 2)[2]
+            key_part = key_parts[2]
             # Add padding if needed
             padding = 4 - len(key_part) % 4
             if padding != 4:
@@ -148,3 +159,7 @@ class ClerkAuthService:
         
         new_user = await user_service.create_user(user_data)
         return new_user
+
+
+# Create global instance
+clerk_auth_service = ClerkAuthService()

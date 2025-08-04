@@ -237,8 +237,8 @@ class AlertingService:
         """
         
         try:
-            await self.db.query(alerts_query)
-            await self.db.query(metrics_query)
+            await self.db.execute(alerts_query)
+            await self.db.execute(metrics_query)
         except Exception as e:
             logfire.error("Failed to create alerts/metrics tables", error=str(e))
     
@@ -408,10 +408,20 @@ class AlertingService:
         
         # Store in database
         try:
-            result = await self.db.create(
-                "system_alerts",
-                alert.dict(exclude_none=True)
-            )
+            alert_data = alert.dict(exclude_none=True)
+            # Create a query with all fields
+            fields = []
+            params = {}
+            for key, value in alert_data.items():
+                fields.append(f"{key} = ${key}")
+                params[key] = value
+            
+            query = f"""
+                CREATE system_alerts SET
+                    {', '.join(fields)}
+            """
+            
+            result = await self.db.execute(query, params)
             if result and len(result) > 0:
                 alert.id = result[0].get('id')
         except Exception as e:
@@ -456,7 +466,7 @@ class AlertingService:
         """Acknowledge an alert."""
         try:
             # Update in database
-            await self.db.query(
+            await self.db.execute(
                 f"UPDATE {alert_id} SET acknowledged_at = time::now(), acknowledged_by = $acknowledged_by",
                 {"acknowledged_by": acknowledged_by}
             )
@@ -481,7 +491,7 @@ class AlertingService:
         """Resolve an alert."""
         try:
             # Update in database
-            await self.db.query(
+            await self.db.execute(
                 f"UPDATE {alert_id} SET resolved_at = time::now(), status = 'resolved'",
                 {}
             )
@@ -524,7 +534,7 @@ class AlertingService:
         try:
             cutoff_time = (datetime.now(timezone.utc) - timedelta(hours=hours)).isoformat()
             
-            result = await self.db.query(
+            result = await self.db.execute(
                 f"SELECT * FROM system_alerts WHERE triggered_at > '{cutoff_time}' ORDER BY triggered_at DESC"
             )
             
@@ -559,13 +569,13 @@ class AlertingService:
         try:
             # Query metrics table for recent values
             query = """
-            SELECT value FROM metrics 
+            SELECT `value`, created_at FROM metrics 
             WHERE type = $metric_type 
-            AND created_at > $since 
+            AND created_at > $since
             ORDER BY created_at DESC
             """
             
-            result = await self.db.query(query, {
+            result = await self.db.execute(query, {
                 "metric_type": metric_type,
                 "since": since.isoformat()
             })
@@ -585,11 +595,10 @@ class AlertingService:
             query = """
             SELECT count() as total FROM metrics 
             WHERE type = $metric_type 
-            AND created_at > $since 
-            GROUP BY total
+            AND created_at > $since
             """
             
-            result = await self.db.query(query, {
+            result = await self.db.execute(query, {
                 "metric_type": metric_type,
                 "since": since.isoformat()
             })
@@ -611,11 +620,10 @@ class AlertingService:
             query = """
             SELECT count() as total FROM patient_alerts 
             WHERE status = 'active' 
-            AND created_at < $cutoff 
-            GROUP BY total
+            AND created_at < $cutoff
             """
             
-            result = await self.db.query(query, {"cutoff": cutoff})
+            result = await self.db.execute(query, {"cutoff": cutoff})
             
             if result and len(result) > 0:
                 return result[0].get('total', 0)
@@ -631,11 +639,10 @@ class AlertingService:
             query = """
             SELECT count() as total FROM patient 
             WHERE risk_level = 'High' 
-            AND created_at > $since 
-            GROUP BY total
+            AND created_at > $since
             """
             
-            result = await self.db.query(query, {"since": since.isoformat()})
+            result = await self.db.execute(query, {"since": since.isoformat()})
             
             if result and len(result) > 0:
                 return result[0].get('total', 0)
@@ -652,11 +659,10 @@ class AlertingService:
             query = """
             SELECT count() as total FROM audit_logs 
             WHERE action = 'UNAUTHORIZED_PHI_ACCESS' 
-            AND created_at > $since 
-            GROUP BY total
+            AND created_at > $since
             """
             
-            result = await self.db.query(query, {"since": since.isoformat()})
+            result = await self.db.execute(query, {"since": since.isoformat()})
             
             if result and len(result) > 0:
                 return result[0].get('total', 0)
@@ -669,8 +675,14 @@ class AlertingService:
     async def record_metric(self, metric_type: str, value: float, metadata: Optional[Dict[str, Any]] = None):
         """Record a metric value for alert checking."""
         try:
-            await self.db.create(
-                "metrics",
+            await self.db.execute(
+                """
+                CREATE metrics SET
+                    type = $type,
+                    value = $value,
+                    metadata = $metadata,
+                    created_at = $created_at
+                """,
                 {
                     "type": metric_type,
                     "value": value,

@@ -25,6 +25,7 @@ from app.core.middleware import (
 from app.middleware.audit_middleware import AuditMiddleware, AuditedRoute
 from app.middleware.metrics_middleware import MetricsMiddleware
 from app.middleware.cache_middleware import CacheMiddleware
+from app.middleware.request_signing_middleware import RequestSigningMiddleware
 from app.core.exceptions import (
     ValidationException,
     AuthenticationException,
@@ -54,6 +55,7 @@ from app.api.v1.test_clerk import router as test_clerk
 from app.api.v1.test_dashboard import router as test_dashboard
 from app.api.v1.test_patients import router as test_patients
 from app.api.v1.test_patients_raw import router as test_patients_raw
+from app.api.v1.hipaa_reports import router as hipaa_reports
 
 # Get configuration
 settings = get_settings()
@@ -158,6 +160,7 @@ app.add_middleware(
 # Custom middleware
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(RequestValidationMiddleware)
+app.add_middleware(RequestSigningMiddleware)  # Add request signing for sensitive operations
 app.add_middleware(AuditMiddleware)  # Add audit middleware
 app.add_middleware(MetricsMiddleware)  # Add metrics middleware
 app.add_middleware(CacheMiddleware)  # Add cache middleware for performance
@@ -414,6 +417,12 @@ app.include_router(
     system_alerts,
     prefix=f"{API_V1_PREFIX}/system-alerts",
     tags=["System Alerts"],
+)
+
+app.include_router(
+    hipaa_reports,
+    prefix=f"{API_V1_PREFIX}/hipaa-reports",
+    tags=["HIPAA Compliance"],
 )
 
 

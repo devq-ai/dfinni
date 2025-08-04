@@ -12,6 +12,7 @@ class UserRole(str, Enum):
     ADMIN = "ADMIN"
     AUDIT = "AUDIT"
     USER = "USER"  # Default role for Clerk users
+    VIEWER = "VIEWER"  # Read-only access
     DOCTOR = "DOCTOR"
     NURSE = "NURSE"
 
@@ -58,6 +59,17 @@ class UserInDB(UserBase):
     created_at: datetime
     updated_at: datetime
     last_login: Optional[datetime] = None
+    
+    model_config = ConfigDict(from_attributes=True)
+
+class User(BaseModel):
+    """User model for authenticated users."""
+    id: str
+    email: EmailStr
+    first_name: str
+    last_name: str
+    role: UserRole
+    is_active: bool
     
     model_config = ConfigDict(from_attributes=True)
 

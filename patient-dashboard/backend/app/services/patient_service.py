@@ -14,6 +14,7 @@ from app.database.connection import get_database
 from app.core.exceptions import ValidationException, ResourceNotFoundException
 from app.config.logging import audit_logger
 from app.services.metrics_service import metrics_service
+from app.services.encryption_service import encryption_service
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,9 @@ class PatientService:
                 "updated_at": datetime.utcnow().isoformat(),
                 "created_by": created_by
             })
+            
+            # Encrypt PII fields before storing
+            patient_dict = encryption_service.encrypt_patient_pii(patient_dict)
             
             # Create patient in database
             result = await db.execute(
@@ -114,6 +118,8 @@ class PatientService:
             
             if result and result[0].get('result') and result[0]['result']:
                 patient_data = result[0]['result'][0]
+                # Decrypt PII fields before returning
+                patient_data = encryption_service.decrypt_patient_pii(patient_data)
                 return PatientResponse.from_db(patient_data)
             
             return None
@@ -323,7 +329,9 @@ class PatientService:
                             else:
                                 patient_data['id'] = str(patient_data['id'])
                             
-                            patients.append(PatientResponse.from_db(patient_data))
+                            # Decrypt PII fields before returning
+                            decrypted_data = encryption_service.decrypt_patient_pii(patient_data)
+                            patients.append(PatientResponse.from_db(decrypted_data))
                         except Exception as e:
                             safe_logfire_error("Error processing patient", error=str(e), patient_id=patient_data.get('id', 'unknown'))
             

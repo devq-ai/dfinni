@@ -17,23 +17,70 @@ from app.core.exceptions import RateLimitException
 logger = structlog.get_logger()
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """Add security headers for HIPAA compliance."""
+    """Add enhanced security headers for HIPAA compliance."""
     
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         response = await call_next(request)
         
-        # Security headers
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        response.headers["Content-Security-Policy"] = "default-src 'self'"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        # Content Security Policy - strict with Clerk support
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.*.lcl.dev https://*.clerk.accounts.dev; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https: blob:; "
+            "font-src 'self' data:; "
+            "connect-src 'self' https://clerk.*.lcl.dev https://*.clerk.accounts.dev ws://localhost:* wss://localhost:* http://localhost:8001 https://api.pfinni.com; "
+            "frame-src 'self' https://clerk.*.lcl.dev https://*.clerk.accounts.dev; "
+            "object-src 'none'; "
+            "base-uri 'self'; "
+            "form-action 'self'; "
+            "frame-ancestors 'none'; "
+            "upgrade-insecure-requests;"
+        )
         
-        # Remove server header
+        # Strict Transport Security - enforce HTTPS with preload
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+        
+        # Prevent clickjacking
+        response.headers["X-Frame-Options"] = "DENY"
+        
+        # Prevent MIME type sniffing
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        
+        # Enable XSS protection
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        
+        # Referrer policy for privacy
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        
+        # Permissions policy - disable unnecessary features
+        response.headers["Permissions-Policy"] = (
+            "accelerometer=(), "
+            "camera=(), "
+            "geolocation=(), "
+            "gyroscope=(), "
+            "magnetometer=(), "
+            "microphone=(), "
+            "payment=(), "
+            "usb=()"
+        )
+        
+        # HIPAA-specific headers
+        response.headers["X-HIPAA-Compliance"] = "enabled"
+        response.headers["X-Data-Classification"] = "PHI"
+        
+        # Remove server header for security
         if "Server" in response.headers:
             del response.headers["Server"]
+        
+        # Log security headers applied (with request_id if available)
+        request_id = getattr(request.state, 'request_id', 'unknown')
+        logger.info(
+            "security_headers_applied",
+            request_id=request_id,
+            path=request.url.path,
+            method=request.method
+        )
         
         return response
 
