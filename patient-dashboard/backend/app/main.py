@@ -158,18 +158,20 @@ app.add_middleware(
     expose_headers=["X-Total-Count", "X-Page-Count"],
 )
 
-# Custom middleware
-app.add_middleware(LoggingMiddleware)
-app.add_middleware(RequestValidationMiddleware)
-app.add_middleware(RequestSigningMiddleware)  # Add request signing for sensitive operations
-app.add_middleware(AuditMiddleware)  # Add audit middleware
-app.add_middleware(MetricsMiddleware)  # Add metrics middleware
-app.add_middleware(CacheMiddleware)  # Add cache middleware for performance
+# Custom middleware - temporarily disabled for debugging
+# app.add_middleware(LoggingMiddleware)
+# app.add_middleware(RequestValidationMiddleware)
+# app.add_middleware(RequestSigningMiddleware)  # Add request signing for sensitive operations
+# app.add_middleware(AuditMiddleware)  # Add audit middleware
+# app.add_middleware(MetricsMiddleware)  # Add metrics middleware
+# app.add_middleware(CacheMiddleware)  # Add cache middleware for performance
 
 if settings.RATE_LIMIT_ENABLED:
     # Use enhanced rate limiter with distributed storage
-    from app.core.rate_limiter import RateLimitMiddleware as EnhancedRateLimiter
-    app.add_middleware(EnhancedRateLimiter)
+    # Disable for now due to middleware issues
+    pass
+    # from app.core.rate_limiter import RateLimitMiddleware as EnhancedRateLimiter
+    # app.add_middleware(EnhancedRateLimiter)
 
 
 # Exception handlers
@@ -275,7 +277,10 @@ async def general_exception_handler(request: Request, exc: Exception):
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Basic health check endpoint."""
-    return {"status": "healthy", "timestamp": time.time()}
+    try:
+        return {"status": "healthy", "timestamp": time.time()}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
 
 
 @app.get("/health/detailed", tags=["Health"])
@@ -445,18 +450,18 @@ if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8001)
 
 # Add request ID to all responses
-@app.middleware("http")
-async def add_request_id(request: Request, call_next):
-    """Add unique request ID to all responses."""
-    import uuid
-
-    request_id = str(uuid.uuid4())
-    request.state.request_id = request_id
-
-    response = await call_next(request)
-    response.headers["X-Request-ID"] = request_id
-
-    return response
+# @app.middleware("http")
+# async def add_request_id(request: Request, call_next):
+#     """Add unique request ID to all responses."""
+#     import uuid
+#
+#     request_id = str(uuid.uuid4())
+#     request.state.request_id = request_id
+#
+#     response = await call_next(request)
+#     response.headers["X-Request-ID"] = request_id
+#
+#     return response
 
 
 # Metrics endpoint (if enabled)

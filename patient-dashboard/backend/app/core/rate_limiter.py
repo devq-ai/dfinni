@@ -7,6 +7,8 @@ import logfire
 from typing import Optional, Dict, Any, Tuple
 from datetime import datetime, timedelta
 from fastapi import Request, HTTPException, status
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
 
 from app.database.connection import get_database
 from app.config.settings import get_settings
@@ -136,7 +138,7 @@ class RateLimiter:
             return True, {}
 
 
-class RateLimitMiddleware:
+class RateLimitMiddleware(BaseHTTPMiddleware):
     """
     Enhanced rate limiting middleware with distributed storage.
     """
@@ -155,7 +157,7 @@ class RateLimitMiddleware:
             global_limits: Global rate limits by method
             endpoint_limits: Per-endpoint rate limits
         """
-        self.app = app
+        super().__init__(app)
         self.global_limits = global_limits or {
             "GET": {"requests": 100, "window": 60},
             "POST": {"requests": 50, "window": 60},
@@ -181,7 +183,7 @@ class RateLimitMiddleware:
             if endpoint not in self.endpoint_limits:
                 self.endpoint_limits[endpoint] = limits
     
-    async def __call__(self, request: Request, call_next):
+    async def dispatch(self, request: Request, call_next):
         """Process request with rate limiting."""
         # Skip rate limiting for health checks and docs
         if request.url.path in ["/health", "/docs", "/redoc", "/openapi.json"]:

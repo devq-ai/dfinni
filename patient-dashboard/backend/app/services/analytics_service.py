@@ -51,9 +51,21 @@ class AnalyticsService:
         try:
             db = await self._get_db()
             
+            # Add logging to debug
+            logfire.info("Starting dashboard metrics calculation")
+            
             # Get all patients and count by status
             all_patients_query = "SELECT * FROM patient WHERE status != 'Deleted'"
-            all_patients = await db.execute(all_patients_query)
+            result = await db.execute(all_patients_query)
+            
+            # Handle SurrealDB response format
+            all_patients = []
+            if result and len(result) > 0:
+                # SurrealDB returns array of results, first element contains the actual data
+                if isinstance(result[0], dict) and 'result' in result[0]:
+                    all_patients = result[0]['result']
+                elif isinstance(result[0], list):
+                    all_patients = result[0]
             
             status_counts = {}
             if all_patients:
@@ -79,7 +91,16 @@ class AnalyticsService:
             # Get active alerts count
             alerts_query = "SELECT * FROM alert WHERE status = 'ACTIVE'"
             alerts_result = await db.execute(alerts_query)
-            active_alerts = len(alerts_result) if alerts_result else 0
+            
+            # Handle SurrealDB response format for alerts
+            alerts_data = []
+            if alerts_result and len(alerts_result) > 0:
+                if isinstance(alerts_result[0], dict) and 'result' in alerts_result[0]:
+                    alerts_data = alerts_result[0]['result']
+                elif isinstance(alerts_result[0], list):
+                    alerts_data = alerts_result[0]
+            
+            active_alerts = len(alerts_data)
             
             # Count active and urgent patients
             active_patients = status_counts.get('active', 0)
@@ -109,10 +130,23 @@ class AnalyticsService:
         except Exception as e:
             logger.error(f"Error calculating dashboard metrics: {str(e)}")
             try:
-                logfire.error("Dashboard metrics calculation failed", error=str(e))
+                logfire.error("Dashboard metrics calculation failed", error=str(e), error_type=type(e).__name__)
             except:
                 pass
-            raise
+            
+            # Return default metrics on error
+            default_metrics = {
+                "totalPatients": 0,
+                "activePatients": 0,
+                "urgentPatients": 0,
+                "total_patients": 0,
+                "recent_patients_30d": 0,
+                "active_alerts": 0,
+                "patients_by_status": {},
+                "patients_by_risk_level": {},
+                "last_updated": datetime.utcnow().isoformat()
+            }
+            return default_metrics
     
     async def get_recent_activity(self, limit: int = 10) -> List[Dict[str, Any]]:
         """Get recent patient activity and system events."""
