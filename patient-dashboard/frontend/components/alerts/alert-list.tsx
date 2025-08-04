@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Alert } from '@/types/alert'
 import { alertsApi } from '@/lib/api/alerts'
+import { useClientAuthHeaders } from '@/lib/api/auth-client'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -10,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { AlertCircle, AlertTriangle, Info, Clock, User } from 'lucide-react'
 
 export function AlertList() {
+  const getAuthHeaders = useClientAuthHeaders()
   const [alerts, setAlerts] = useState<Alert[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +25,7 @@ export function AlertList() {
     try {
       setLoading(true)
       setError(null)
-      const response = await alertsApi.getAlerts(1, 50, filter === 'all' ? undefined : filter)
+      const response = await alertsApi.getAlerts(getAuthHeaders, 1, 50, filter === 'all' ? undefined : filter)
       setAlerts(response.alerts)
     } catch (err) {
       setError('Failed to load alerts')
@@ -35,7 +37,7 @@ export function AlertList() {
 
   const handleAcknowledge = async (alertId: string) => {
     try {
-      const updatedAlert = await alertsApi.acknowledgeAlert(alertId)
+      const updatedAlert = await alertsApi.acknowledgeAlert(getAuthHeaders, alertId)
       setAlerts(alerts.map(alert => 
         alert.id === alertId ? updatedAlert : alert
       ))
@@ -46,7 +48,7 @@ export function AlertList() {
 
   const handleResolve = async (alertId: string) => {
     try {
-      const updatedAlert = await alertsApi.resolveAlert(alertId)
+      const updatedAlert = await alertsApi.resolveAlert(getAuthHeaders, alertId)
       setAlerts(alerts.map(alert => 
         alert.id === alertId ? updatedAlert : alert
       ))

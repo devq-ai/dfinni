@@ -4,7 +4,7 @@ import { Download, Settings } from 'lucide-react'
 
 export default function AlertsPage() {
   return (
-    <div className="container mx-auto py-6">
+    <div className="container mx-auto py-6 px-6">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Healthcare Alerts</h1>

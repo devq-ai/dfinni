@@ -64,7 +64,10 @@ export default function PatientsPage() {
       
       // Apply filters based on query parameter
       if (filter === 'high-risk') {
-        filteredPatients = filteredPatients.filter(p => p.riskScore && p.riskScore >= 4);
+        // High risk patients are those with risk level 'High' AND not churned
+        filteredPatients = filteredPatients.filter(p => 
+          p.riskLevel === 'High' && p.status !== 'churned'
+        );
       } else if (filter === 'active') {
         filteredPatients = filteredPatients.filter(p => p.status === 'active');
       }
@@ -264,6 +267,7 @@ export default function PatientsPage() {
                     <TableHead>Date of Birth</TableHead>
                     <TableHead>Age</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Risk Level</TableHead>
                     <TableHead>Address</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -280,6 +284,19 @@ export default function PatientsPage() {
                         <Badge className={getStatusColor(patient.status)}>
                           {patient.status.charAt(0).toUpperCase() + patient.status.slice(1)}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {patient.riskLevel && (
+                          <Badge 
+                            variant={
+                              patient.riskLevel === 'High' ? 'destructive' : 
+                              patient.riskLevel === 'Medium' ? 'default' : 
+                              'secondary'
+                            }
+                          >
+                            {patient.riskLevel}
+                          </Badge>
+                        )}
                       </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {formatAddress(patient.address)}

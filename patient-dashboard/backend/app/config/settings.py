@@ -81,6 +81,21 @@ class Settings(BaseSettings):
     # Clerk Configuration (Primary Authentication)
     CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_SECRET_KEY")
     CLERK_PUBLISHABLE_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_PUBLISHABLE_KEY")
+    
+    def __init__(self, **kwargs):
+        # Force load environment variables if not provided
+        import os
+        if not kwargs.get('CLERK_PUBLISHABLE_KEY') and not os.getenv('CLERK_PUBLISHABLE_KEY'):
+            publishable_key = os.getenv('PFINNI_CLERK_PUBLISHABLE_KEY')
+            if publishable_key:
+                kwargs['CLERK_PUBLISHABLE_KEY'] = publishable_key
+        
+        if not kwargs.get('CLERK_SECRET_KEY') and not os.getenv('CLERK_SECRET_KEY'):
+            secret_key = os.getenv('PFINNI_CLERK_SECRET_KEY')
+            if secret_key:
+                kwargs['CLERK_SECRET_KEY'] = secret_key
+                
+        super().__init__(**kwargs)
 
     # External Services
     LOGFIRE_TOKEN: Optional[str] = Field(default=None, env="PFINNI_LOGFIRE_TOKEN")

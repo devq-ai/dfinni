@@ -54,8 +54,8 @@ export default function DashboardPage() {
       
       // Load alerts data
       const alertsResponse = await alertsApi.getAlerts(getAuthHeaders, 1, 10, 'new')
-      const alertsTotal = alertsResponse?.data?.stats?.total || 0
-      const alertsList = alertsResponse?.data?.alerts || []
+      const alertsTotal = alertsResponse?.data?.stats?.total || alertsResponse?.total || 0
+      const alertsList = alertsResponse?.data?.alerts || alertsResponse?.alerts || []
       
       // Calculate alert trends (comparing to previous period)
       const previousAlerts = Math.floor(alertsTotal * (0.8 + Math.random() * 0.4))

@@ -48,17 +48,97 @@ async def get_alerts(
 ):
     """Get alerts for the current user with optional filters."""
     try:
-        # For now, return empty alerts to get dashboard working
-        alerts = []
+        # Debug log for successful authentication
+        logfire.info(
+            "Alerts API accessed successfully",
+            user_id=current_user.id,
+            user_email=current_user.email,
+            clerk_user_id=getattr(current_user, 'clerk_user_id', 'N/A')
+        )
         
-        # Return empty stats
-        stats_data = {
-            "total": 0,
-            "unread": 0,
-            "critical": 0,
-            "pending_action": 0
+        # Build query based on filters
+        query_parts = ["SELECT * FROM alert"]
+        where_clauses = []
+        params = {}
+        
+        # Apply status filter
+        if status:
+            if status == 'new':
+                where_clauses.append("status = 'active'")
+            elif status == 'read':
+                where_clauses.append("read = true")
+            elif status == 'unread':
+                where_clauses.append("(read = false OR read = null)")
+            elif status == 'resolved':
+                where_clauses.append("status = 'resolved'")
+            elif status == 'pending':
+                where_clauses.append("requires_action = true")
+        
+        # Apply type filter
+        if type:
+            where_clauses.append("type = $type")
+            params['type'] = type
+        
+        # Apply search filter
+        if search:
+            where_clauses.append("(title CONTAINS $search OR description CONTAINS $search)")
+            params['search'] = search
+        
+        # Combine where clauses
+        if where_clauses:
+            query_parts.append("WHERE " + " AND ".join(where_clauses))
+        
+        # Add ordering and pagination
+        query_parts.append("ORDER BY created_at DESC")
+        query_parts.append(f"LIMIT {limit} START {offset}")
+        
+        # Execute query
+        query = " ".join(query_parts)
+        alerts_result = await db.execute(query, params)
+        
+        # Convert results to Alert objects
+        alerts = []
+        if alerts_result:
+            for alert_data in alerts_result:
+                # Map database fields to API model
+                alert = Alert(
+                    id=str(alert_data.get('id', '')).split(':')[-1] if alert_data.get('id') else None,
+                    type=alert_data.get('type', 'unknown'),
+                    title=alert_data.get('title', ''),
+                    message=alert_data.get('description', ''),
+                    patient_id=alert_data.get('patient_id'),
+                    patient_name=alert_data.get('patient_name'),
+                    source=alert_data.get('triggered_by', 'system'),
+                    read=alert_data.get('read', False),
+                    resolved=alert_data.get('status') == 'resolved',
+                    created_at=alert_data.get('created_at'),
+                    expires_at=alert_data.get('expires_at'),
+                    user_id=alert_data.get('user_id')
+                )
+                alerts.append(alert)
+        
+        # Get stats from database
+        stats_queries = {
+            'total': "SELECT count() as count FROM alert GROUP ALL",
+            'unread': "SELECT count() as count FROM alert WHERE (read = false OR read = null) GROUP ALL",
+            'critical': "SELECT count() as count FROM alert WHERE severity = 'critical' GROUP ALL",
+            'pending_action': "SELECT count() as count FROM alert WHERE requires_action = true GROUP ALL"
         }
-        stats = AlertStats(**stats_data)
+        
+        stats_results = {}
+        for stat_name, stat_query in stats_queries.items():
+            result = await db.execute(stat_query)
+            if result and len(result) > 0:
+                stats_results[stat_name] = result[0].get('count', 0)
+            else:
+                stats_results[stat_name] = 0
+        
+        stats = AlertStats(
+            total=stats_results['total'],
+            unread=stats_results['unread'],
+            critical=stats_results['critical'],
+            pending_action=stats_results['pending_action']
+        )
         
         return {
             "status": "success",
@@ -69,6 +149,7 @@ async def get_alerts(
         }
         
     except Exception as e:
+        logfire.error(f"Error in get_alerts: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("", response_model=dict)

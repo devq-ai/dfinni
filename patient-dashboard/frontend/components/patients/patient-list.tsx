@@ -2,23 +2,27 @@
 
 import { useState, useEffect } from 'react'
 import { Patient } from '@/types/patient'
-import { patientsApi } from '@/lib/api/patients'
+import { usePatientsApi } from '@/lib/api/patients-client'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { useSearchParams } from 'next/navigation'
 
 export function PatientList() {
+  const patientsApi = usePatientsApi()
   const [patients, setPatients] = useState<Patient[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const pageSize = 10
+  const searchParams = useSearchParams()
+  const filter = searchParams.get('filter')
 
   useEffect(() => {
     loadPatients()
-  }, [page])
+  }, [page, filter])
 
   const loadPatients = async () => {
     try {
@@ -35,11 +39,12 @@ export function PatientList() {
     }
   }
 
-  const getRiskBadgeVariant = (score?: number): "default" | "secondary" | "destructive" | "outline" => {
-    if (!score) return 'default'
-    if (score <= 2) return 'secondary'
-    if (score <= 4) return 'outline'
-    return 'destructive'
+  const getRiskBadgeVariant = (level?: string): "default" | "secondary" | "destructive" | "outline" => {
+    if (!level) return 'default'
+    if (level === 'Low') return 'secondary'
+    if (level === 'Medium') return 'default'
+    if (level === 'High') return 'destructive'
+    return 'default'
   }
 
   if (loading) {
@@ -82,7 +87,7 @@ export function PatientList() {
                 Contact
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Risk Score
+                Risk Level
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Status
@@ -118,9 +123,9 @@ export function PatientList() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {patient.riskScore && (
-                    <Badge variant={getRiskBadgeVariant(patient.riskScore)}>
-                      {patient.riskScore}
+                  {patient.riskLevel && (
+                    <Badge variant={getRiskBadgeVariant(patient.riskLevel)}>
+                      {patient.riskLevel}
                     </Badge>
                   )}
                 </td>

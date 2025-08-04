@@ -62,7 +62,7 @@ PFINNI_CLERK_SECRET_KEY=sk_test_YOUR_FULL_KEY_HERE
 **Solutions:**
 
 1. **Ensure you copied the complete key:**
-   - The key should look like: `pk_test_dGFsZW50ZWQta2lkLTc2LmNsZXJrLmFjY291bnRzLmRldiQ`
+   - The key should look like: `pk_test_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX`
    - It should NOT be truncated or partial
 
 2. **Check for encoding issues:**
@@ -149,8 +149,8 @@ curl https://$ISSUER/.well-known/jwks.json
 
 ```bash
 # Test environment
-PFINNI_CLERK_PUBLISHABLE_KEY=pk_test_dGFsZW50ZWQta2lkLTc2LmNsZXJrLmFjY291bnRzLmRldiQ
-PFINNI_CLERK_SECRET_KEY=sk_test_XXXXXXXXXXXXXXXXXXXXXXXXXX
+PFINNI_CLERK_PUBLISHABLE_KEY=pk_test_YOUR_PUBLISHABLE_KEY_HERE
+PFINNI_CLERK_SECRET_KEY=sk_test_YOUR_SECRET_KEY_HERE
 
 # The above will extract issuer: talented-kid-76.clerk.accounts.dev
 # JWKS URL: https://talented-kid-76.clerk.accounts.dev/.well-known/jwks.json

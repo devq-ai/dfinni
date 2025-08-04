@@ -9,7 +9,7 @@ async def get_test_patients_raw():
     """Get raw patient data for testing"""
     try:
         db = await get_database()
-        result = await db.execute("SELECT * FROM patient ORDER BY created_at DESC LIMIT 10")
+        result = await db.execute("SELECT * FROM patient ORDER BY created_at DESC")
         
         patients = []
         if result:

@@ -103,8 +103,10 @@ class AnalyticsService:
             active_alerts = len(alerts_data)
             
             # Count active and urgent patients
-            active_patients = status_counts.get('active', 0)
-            urgent_patients = risk_counts.get('high', 0) + risk_counts.get('critical', 0)
+            # Active includes: active, onboarding, urgent statuses
+            active_patients = status_counts.get('active', 0) + status_counts.get('onboarding', 0) + status_counts.get('urgent', 0)
+            # High risk patients have risk_level = 'High' (capital H)
+            urgent_patients = risk_counts.get('High', 0)
             
             metrics = {
                 "totalPatients": total_patients,

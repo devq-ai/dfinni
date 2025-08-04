@@ -1,4 +1,5 @@
 export type PatientStatus = 'inquiry' | 'onboarding' | 'active' | 'churned' | 'urgent';
+export type RiskLevel = 'Low' | 'Medium' | 'High';
 
 export interface Patient {
   id: string
@@ -30,6 +31,7 @@ export interface Patient {
   medications?: string[]
   conditions?: string[]
   riskScore?: number
+  riskLevel?: RiskLevel
   lastVisit?: string
   nextAppointment?: string
   status: PatientStatus

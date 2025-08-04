@@ -40,7 +40,16 @@ async def get_current_user(
     if auth_header and auth_header.startswith("Bearer "):
         token = auth_header.split(" ")[1]
     
+    # Debug logging
+    logfire.info(
+        "Authentication attempt",
+        has_auth_header=bool(auth_header),
+        has_token=bool(token),
+        token_prefix=token[:20] + "..." if token else None
+    )
+    
     if not token:
+        logfire.warning("No authentication token provided")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Not authenticated",
