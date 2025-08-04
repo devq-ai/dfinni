@@ -1,10 +1,12 @@
 """
 Integration tests for dashboard API endpoints
+Per Production Proposal: Add Logfire instrumentation to all test cases
 """
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 from datetime import datetime, timedelta
+import logfire
 
 from app.main import app
 from app.models.analytics import DashboardMetrics, TimeSeriesData
@@ -60,6 +62,8 @@ class TestDashboardAPI:
     
     def test_get_dashboard_metrics(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test getting dashboard metrics."""
+        logfire.info("Testing dashboard metrics retrieval", test_case="get_dashboard_metrics")
+        
         # Mock service response
         mock_analytics_service.get_dashboard_metrics.return_value = DashboardMetrics(
             total_patients=150,
@@ -84,9 +88,16 @@ class TestDashboardAPI:
         assert data["alerts_today"] == 15
         assert data["critical_alerts"] == 3
         assert data["patient_growth"] == 12.5
+        
+        logfire.info("Dashboard metrics retrieved successfully", 
+                    total_patients=150, 
+                    active_patients=120,
+                    alerts_today=15)
     
     def test_get_patient_overview(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test getting patient overview data."""
+        logfire.info("Testing patient overview retrieval", test_case="get_patient_overview")
+        
         # Mock service response
         mock_patient_service.get_patient_overview.return_value = {
             "by_status": {
@@ -118,9 +129,15 @@ class TestDashboardAPI:
         assert data["by_status"]["active"] == 120
         assert data["by_risk_level"]["high"] == 20
         assert len(data["recent_additions"]) == 1
+        
+        logfire.info("Patient overview retrieved successfully",
+                    active_patients=120,
+                    high_risk_patients=20)
     
     def test_get_alerts_overview(self, client, auth_headers, mock_current_user, mock_alert_service):
         """Test getting alerts overview."""
+        logfire.info("Testing alerts overview retrieval", test_case="get_alerts_overview")
+        
         # Mock service response
         mock_alert_service.get_alerts_overview.return_value = {
             "total_active": 25,
@@ -156,9 +173,15 @@ class TestDashboardAPI:
         assert data["total_active"] == 25
         assert data["by_severity"]["critical"] == 3
         assert data["by_type"]["medication"] == 12
+        
+        logfire.info("Alerts overview retrieved successfully",
+                    total_active=25,
+                    critical_alerts=3)
     
     def test_get_time_series_data(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test getting time series data."""
+        logfire.info("Testing time series data retrieval", test_case="get_time_series_data")
+        
         # Mock service response
         mock_analytics_service.get_time_series_data.return_value = [
             TimeSeriesData(date="2024-01-01", value=100, label="Patients"),
@@ -185,9 +208,15 @@ class TestDashboardAPI:
         assert data[0]["date"] == "2024-01-01"
         assert data[0]["value"] == 100
         assert data[-1]["value"] == 115
+        
+        logfire.info("Time series data retrieved successfully",
+                    metric="patient_count",
+                    data_points=5)
     
     def test_get_adherence_trends(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test getting medication adherence trends."""
+        logfire.info("Testing adherence trends retrieval", test_case="get_adherence_trends")
+        
         # Mock service response
         mock_analytics_service.get_adherence_trends.return_value = [
             {
@@ -213,9 +242,15 @@ class TestDashboardAPI:
         assert len(data) == 2
         assert data[0]["average_adherence"] == 82.5
         assert data[1]["average_adherence"] == 84.2
+        
+        logfire.info("Adherence trends retrieved successfully",
+                    weeks_retrieved=2,
+                    latest_adherence=84.2)
     
     def test_get_provider_stats(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test getting provider statistics."""
+        logfire.info("Testing provider statistics retrieval", test_case="get_provider_stats")
+        
         # Mock service response
         mock_analytics_service.get_provider_performance_metrics.return_value = {
             "total_patients": 45,
@@ -240,9 +275,15 @@ class TestDashboardAPI:
         assert data["total_patients"] == 45
         assert data["average_response_time"] == 2.5
         assert data["patient_satisfaction"] == 4.5
+        
+        logfire.info("Provider statistics retrieved successfully",
+                    total_patients=45,
+                    satisfaction=4.5)
     
     def test_get_recent_activities(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test getting recent activities."""
+        logfire.info("Testing recent activities retrieval", test_case="get_recent_activities")
+        
         # Mock service response
         mock_analytics_service.get_recent_activities.return_value = [
             {
@@ -272,9 +313,13 @@ class TestDashboardAPI:
         assert len(data) == 2
         assert data[0]["type"] == "patient_added"
         assert data[1]["type"] == "alert_resolved"
+        
+        logfire.info("Recent activities retrieved successfully", activity_count=2)
     
     def test_get_system_health(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test getting system health metrics."""
+        logfire.info("Testing system health metrics retrieval", test_case="get_system_health")
+        
         # Mock service response
         mock_analytics_service.get_system_health_metrics.return_value = {
             "status": "healthy",
@@ -303,9 +348,15 @@ class TestDashboardAPI:
         assert data["status"] == "healthy"
         assert data["uptime_percentage"] == 99.9
         assert data["api_performance"]["error_rate"] == 0.02
+        
+        logfire.info("System health metrics retrieved successfully",
+                    status="healthy",
+                    uptime=99.9)
     
     def test_export_dashboard_data(self, client, auth_headers, mock_current_user, mock_analytics_service):
         """Test exporting dashboard data."""
+        logfire.info("Testing dashboard data export", test_case="export_dashboard_data")
+        
         # Mock service response
         mock_analytics_service.export_analytics_data.return_value = {
             "filename": "dashboard_export_20240115.csv",
@@ -330,9 +381,12 @@ class TestDashboardAPI:
         assert data["filename"].endswith(".csv")
         assert data["format"] == "csv"
         assert "data" in data
+        
+        logfire.info("Dashboard data exported successfully", format="csv")
     
     def test_get_dashboard_widgets(self, client, auth_headers, mock_current_user):
         """Test getting dashboard widget configuration."""
+        logfire.info("Testing dashboard widgets retrieval", test_case="get_dashboard_widgets")
         response = client.get(
             "/api/v1/dashboard/widgets",
             headers=auth_headers
@@ -349,9 +403,12 @@ class TestDashboardAPI:
         assert "type" in widget
         assert "title" in widget
         assert "position" in widget
+        
+        logfire.info("Dashboard widgets retrieved successfully", widget_count=len(data["widgets"]))
     
     def test_update_dashboard_layout(self, client, auth_headers, mock_current_user):
         """Test updating dashboard layout."""
+        logfire.info("Testing dashboard layout update", test_case="update_dashboard_layout")
         layout_data = {
             "layout": [
                 {
@@ -378,8 +435,14 @@ class TestDashboardAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["message"] == "Dashboard layout updated successfully"
+        
+        logfire.info("Dashboard layout updated successfully", widgets_updated=3)
     
     def test_get_dashboard_unauthorized(self, client):
         """Test accessing dashboard without authentication."""
+        logfire.info("Testing unauthorized dashboard access", test_case="get_dashboard_unauthorized")
+        
         response = client.get("/api/v1/dashboard/metrics")
         assert response.status_code == 401
+        
+        logfire.info("Unauthorized access properly rejected")

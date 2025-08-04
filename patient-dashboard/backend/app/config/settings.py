@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file="/Users/dionedge/devqai/.env",  # Single .env file location per Production Proposal
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"
@@ -34,85 +34,85 @@ class Settings(BaseSettings):
     WORKERS: int = Field(default=1, env="WORKERS")
 
     # Security Settings
-    SECRET_KEY: str = Field(default="dev-secret-key", env="SECRET_KEY")
-    JWT_SECRET_KEY: str = Field(default="dev-jwt-secret", env="JWT_SECRET_KEY")
-    ENCRYPTION_KEY: str = Field(default="dev-encryption-key-32-characters", env="ENCRYPTION_KEY")
+    SECRET_KEY: str = Field(default="dev-secret-key", env="PFINNI_SECRET_KEY")
+    JWT_SECRET_KEY: str = Field(default="dev-jwt-secret", env="PFINNI_JWT_SECRET_KEY")
+    ENCRYPTION_KEY: str = Field(default="dev-encryption-key-32-characters", env="PFINNI_ENCRYPTION_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7, env="REFRESH_TOKEN_EXPIRE_DAYS")
 
     # Database Settings
-    DATABASE_URL: str = Field(default="ws://localhost:8000/rpc", env="DATABASE_URL")
-    DATABASE_USER: str = Field(default="root", env="DATABASE_USER")
-    DATABASE_PASS: str = Field(default="root", env="DATABASE_PASS")
-    DATABASE_NAME: str = Field(default="patient_dashboard", env="DATABASE_NAME")
-    DATABASE_NAMESPACE: str = Field(default="patient_dashboard", env="DATABASE_NAMESPACE")
+    DATABASE_URL: str = Field(default="ws://localhost:8000/rpc", env="PFINNI_SURREALDB_URL")
+    DATABASE_USER: str = Field(default="root", env="PFINNI_SURREALDB_USERNAME")
+    DATABASE_PASS: str = Field(default="root", env="PFINNI_SURREALDB_PASSWORD")
+    DATABASE_NAME: str = Field(default="patient_dashboard", env="PFINNI_SURREALDB_DATABASE")
+    DATABASE_NAMESPACE: str = Field(default="patient_dashboard", env="PFINNI_SURREALDB_NAMESPACE")
 
     # SurrealDB Cache Settings
-    CACHE_DATABASE_URL: str = Field(default="ws://localhost:8080/rpc", env="CACHE_DATABASE_URL")
-    CACHE_DATABASE_NAME: str = Field(default="patient_dashboard_cache", env="CACHE_DATABASE_NAME")
-    CACHE_NAMESPACE: str = Field(default="cache", env="CACHE_NAMESPACE")
-    CACHE_TTL: int = Field(default=300, env="CACHE_TTL")  # 5 minutes
+    CACHE_DATABASE_URL: str = Field(default="ws://localhost:8080/rpc", env="PFINNI_CACHE_DATABASE_URL")
+    CACHE_DATABASE_NAME: str = Field(default="patient_dashboard_cache", env="PFINNI_CACHE_DATABASE_NAME")
+    CACHE_NAMESPACE: str = Field(default="cache", env="PFINNI_CACHE_NAMESPACE")
+    CACHE_TTL: int = Field(default=300, env="PFINNI_CACHE_TTL")  # 5 minutes
 
     # CORS Settings  
     CORS_ORIGINS: str = Field(
         default="http://localhost:3000",
-        env="CORS_ORIGINS",
+        env="PFINNI_CORS_ORIGINS",
     )
-    CORS_CREDENTIALS: bool = Field(default=True, env="CORS_CREDENTIALS")
+    CORS_CREDENTIALS: bool = Field(default=True, env="PFINNI_CORS_CREDENTIALS")
     ALLOWED_HOSTS: str = Field(
         default="localhost,127.0.0.1",
         env="ALLOWED_HOSTS",
     )
 
     # Rate Limiting
-    RATE_LIMIT_ENABLED: bool = Field(default=True, env="RATE_LIMIT_ENABLED")
-    RATE_LIMIT_REQUESTS: int = Field(default=100, env="RATE_LIMIT_REQUESTS")
-    RATE_LIMIT_WINDOW: int = Field(default=60, env="RATE_LIMIT_WINDOW")
+    RATE_LIMIT_ENABLED: bool = Field(default=True, env="PFINNI_RATE_LIMIT_ENABLED")
+    RATE_LIMIT_REQUESTS: int = Field(default=100, env="PFINNI_RATE_LIMIT_REQUESTS")
+    RATE_LIMIT_WINDOW: int = Field(default=60, env="PFINNI_RATE_LIMIT_WINDOW")
 
     # File Upload Settings
-    MAX_FILE_SIZE: int = Field(default=10485760, env="MAX_FILE_SIZE")  # 10MB
-    UPLOAD_DIR: str = Field(default="./uploads", env="UPLOAD_DIR")
+    MAX_FILE_SIZE: int = Field(default=10485760, env="PFINNI_MAX_FILE_SIZE")  # 10MB
+    UPLOAD_DIR: str = Field(default="./uploads", env="PFINNI_UPLOAD_DIR")
     ALLOWED_FILE_TYPES: str = Field(
         default="pdf,jpg,jpeg,png,doc,docx",
-        env="ALLOWED_FILE_TYPES",
+        env="PFINNI_ALLOWED_FILE_TYPES",
     )
 
     # BetterAuth Configuration
-    BETTER_AUTH_SECRET: str = Field(default="dev-auth-secret", env="BETTER_AUTH_SECRET")
-    BETTER_AUTH_URL: str = Field(default="http://localhost:8000", env="BETTER_AUTH_URL")
-    BETTER_AUTH_DATABASE_URL: Optional[str] = Field(default=None, env="BETTER_AUTH_DATABASE_URL")
-    BETTER_AUTH_COOKIE_DOMAIN: str = Field(default="localhost", env="BETTER_AUTH_COOKIE_DOMAIN")
-    BETTER_AUTH_COOKIE_SECURE: bool = Field(default=False, env="BETTER_AUTH_COOKIE_SECURE")
-    BETTER_AUTH_SESSION_EXPIRES: str = Field(default="7d", env="BETTER_AUTH_SESSION_EXPIRES")
+    BETTER_AUTH_SECRET: str = Field(default="dev-auth-secret", env="PFINNI_BETTER_AUTH_SECRET")
+    BETTER_AUTH_URL: str = Field(default="http://localhost:8000", env="PFINNI_BETTER_AUTH_URL")
+    BETTER_AUTH_DATABASE_URL: Optional[str] = Field(default=None, env="PFINNI_BETTER_AUTH_DATABASE_URL")
+    BETTER_AUTH_COOKIE_DOMAIN: str = Field(default="localhost", env="PFINNI_BETTER_AUTH_COOKIE_DOMAIN")
+    BETTER_AUTH_COOKIE_SECURE: bool = Field(default=False, env="PFINNI_BETTER_AUTH_COOKIE_SECURE")
+    BETTER_AUTH_SESSION_EXPIRES: str = Field(default="7d", env="PFINNI_BETTER_AUTH_SESSION_EXPIRES")
 
     # External Services
-    LOGFIRE_TOKEN: Optional[str] = Field(default=None, env="LOGFIRE_TOKEN")
-    RESEND_API_KEY: Optional[str] = Field(default=None, env="RESEND_API_KEY")
-    ANTHROPIC_API_KEY: Optional[str] = Field(default=None, env="ANTHROPIC_API_KEY")
-    CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="CLERK_SECRET_KEY")
+    LOGFIRE_TOKEN: Optional[str] = Field(default=None, env="PFINNI_LOGFIRE_TOKEN")
+    RESEND_API_KEY: Optional[str] = Field(default=None, env="PFINNI_RESEND_API_KEY")
+    ANTHROPIC_API_KEY: Optional[str] = Field(default=None, env="SHARED_ANTHROPIC_API_KEY")
+    CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_SECRET_KEY")
 
     # Insurance Integration
-    INSURANCE_CLIENT_ID: Optional[str] = Field(default=None, env="INSURANCE_CLIENT_ID")
-    INSURANCE_CLIENT_SECRET: Optional[str] = Field(default=None, env="INSURANCE_CLIENT_SECRET")
-    INSURANCE_API_URL: Optional[str] = Field(default=None, env="INSURANCE_API_URL")
-    WEBHOOK_SECRET: Optional[str] = Field(default=None, env="WEBHOOK_SECRET")
+    INSURANCE_CLIENT_ID: Optional[str] = Field(default=None, env="PFINNI_INSURANCE_CLIENT_ID")
+    INSURANCE_CLIENT_SECRET: Optional[str] = Field(default=None, env="PFINNI_INSURANCE_CLIENT_SECRET")
+    INSURANCE_API_URL: Optional[str] = Field(default=None, env="PFINNI_INSURANCE_API_URL")
+    WEBHOOK_SECRET: Optional[str] = Field(default=None, env="PFINNI_WEBHOOK_SECRET")
 
     # Email Settings
-    SMTP_HOST: str = Field(default="smtp.resend.com", env="SMTP_HOST")
-    SMTP_PORT: int = Field(default=587, env="SMTP_PORT")
-    FROM_EMAIL: str = Field(default="noreply@memorial-hc.com", env="FROM_EMAIL")
-    FROM_NAME: str = Field(default="Memorial Healthcare Center", env="FROM_NAME")
+    SMTP_HOST: str = Field(default="smtp.resend.com", env="PFINNI_SMTP_HOST")
+    SMTP_PORT: int = Field(default=587, env="PFINNI_SMTP_PORT")
+    FROM_EMAIL: str = Field(default="noreply@memorial-hc.com", env="PFINNI_FROM_EMAIL")
+    FROM_NAME: str = Field(default="Memorial Healthcare Center", env="PFINNI_FROM_NAME")
 
     # Monitoring Settings
-    ENABLE_METRICS: bool = Field(default=True, env="ENABLE_METRICS")
-    METRICS_PORT: int = Field(default=8001, env="METRICS_PORT")
+    ENABLE_METRICS: bool = Field(default=True, env="PFINNI_ENABLE_METRICS")
+    METRICS_PORT: int = Field(default=8001, env="PFINNI_METRICS_PORT")
 
     # Background Jobs Settings (SurrealDB)
-    JOB_QUEUE_DATABASE_URL: str = Field(default="ws://localhost:8080/rpc", env="JOB_QUEUE_DATABASE_URL")
-    JOB_QUEUE_DATABASE_NAME: str = Field(default="patient_dashboard_jobs", env="JOB_QUEUE_DATABASE_NAME")
-    JOB_QUEUE_NAMESPACE: str = Field(default="jobs", env="JOB_QUEUE_NAMESPACE")
-    BIRTHDAY_ALERT_HOUR: int = Field(default=6, env="BIRTHDAY_ALERT_HOUR")
-    INSURANCE_SYNC_HOUR: int = Field(default=2, env="INSURANCE_SYNC_HOUR")
+    JOB_QUEUE_DATABASE_URL: str = Field(default="ws://localhost:8080/rpc", env="PFINNI_JOB_QUEUE_DATABASE_URL")
+    JOB_QUEUE_DATABASE_NAME: str = Field(default="patient_dashboard_jobs", env="PFINNI_JOB_QUEUE_DATABASE_NAME")
+    JOB_QUEUE_NAMESPACE: str = Field(default="jobs", env="PFINNI_JOB_QUEUE_NAMESPACE")
+    BIRTHDAY_ALERT_HOUR: int = Field(default=6, env="PFINNI_BIRTHDAY_ALERT_HOUR")
+    INSURANCE_SYNC_HOUR: int = Field(default=2, env="PFINNI_INSURANCE_SYNC_HOUR")
 
     # Audit & Compliance Settings
     AUDIT_LOG_RETENTION_DAYS: int = Field(default=2555, env="AUDIT_LOG_RETENTION_DAYS")  # 7 years

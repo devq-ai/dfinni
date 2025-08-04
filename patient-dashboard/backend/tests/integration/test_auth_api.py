@@ -1,10 +1,12 @@
 """
 Integration tests for authentication API endpoints
+Per Production Proposal: Add Logfire instrumentation to all test cases
 """
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
 import jwt
+import logfire
 
 from app.main import app
 from app.models.user import UserResponse
@@ -36,6 +38,8 @@ class TestAuthAPI:
     
     def test_register_success(self, client, mock_user_service):
         """Test successful user registration."""
+        logfire.info("Testing user registration", test_case="register_success")
+        
         # Mock user service response
         mock_user_service.create_user.return_value = UserResponse(
             id="user:123",
@@ -65,9 +69,13 @@ class TestAuthAPI:
         assert data["email"] == "newuser@example.com"
         assert data["id"] == "user:123"
         assert "password" not in data
+        
+        logfire.info("User registered successfully", user_id=data["id"], email=data["email"])
     
     def test_register_duplicate_email(self, client, mock_user_service):
         """Test registration with duplicate email."""
+        logfire.info("Testing duplicate email registration", test_case="register_duplicate_email")
+        
         # Mock user service to raise exception
         mock_user_service.create_user.side_effect = Exception("User already exists")
         
@@ -84,9 +92,13 @@ class TestAuthAPI:
         
         assert response.status_code == 400
         assert "Registration failed" in response.json()["detail"]
+        
+        logfire.info("Duplicate email properly rejected")
     
     def test_login_success(self, client, mock_auth_service, sample_user_response):
         """Test successful login."""
+        logfire.info("Testing user login", test_case="login_success")
+        
         # Mock authentication
         mock_auth_service.authenticate_user.return_value = sample_user_response
         mock_auth_service.create_access_token.return_value = "access_token_123"
@@ -106,9 +118,13 @@ class TestAuthAPI:
         assert data["refresh_token"] == "refresh_token_123"
         assert data["token_type"] == "Bearer"
         assert "expires_in" in data
+        
+        logfire.info("User logged in successfully", has_access_token=True, has_refresh_token=True)
     
     def test_login_invalid_credentials(self, client, mock_auth_service):
         """Test login with invalid credentials."""
+        logfire.info("Testing invalid login credentials", test_case="login_invalid_credentials")
+        
         # Mock failed authentication
         mock_auth_service.authenticate_user.return_value = None
         
@@ -122,9 +138,13 @@ class TestAuthAPI:
         
         assert response.status_code == 401
         assert "Invalid email or password" in response.json()["detail"]
+        
+        logfire.info("Invalid credentials properly rejected")
     
     def test_logout_success(self, client, auth_headers):
         """Test successful logout."""
+        logfire.info("Testing user logout", test_case="logout_success")
+        
         with patch('app.api.v1.auth.get_current_user') as mock_get_user:
             mock_get_user.return_value = UserResponse(
                 id="user:123",
@@ -145,9 +165,13 @@ class TestAuthAPI:
             
             assert response.status_code == 200
             assert response.json()["message"] == "Logged out successfully"
+            
+            logfire.info("User logged out successfully")
     
     def test_refresh_token_success(self, client, mock_auth_service, sample_user_response):
         """Test token refresh."""
+        logfire.info("Testing token refresh", test_case="refresh_token_success")
+        
         # Mock token verification and user retrieval
         mock_auth_service.verify_token.return_value = {
             "user_id": "user:123",
@@ -168,9 +192,13 @@ class TestAuthAPI:
             data = response.json()
             assert data["access_token"] == "new_access_token"
             assert data["refresh_token"] == "new_refresh_token"
+            
+            logfire.info("Token refreshed successfully")
     
     def test_change_password_success(self, client, auth_headers, mock_user_service):
         """Test password change."""
+        logfire.info("Testing password change", test_case="change_password_success")
+        
         with patch('app.api.v1.auth.get_current_user') as mock_get_user:
             current_user = UserResponse(
                 id="user:123",
@@ -198,9 +226,13 @@ class TestAuthAPI:
             
             assert response.status_code == 200
             assert response.json()["message"] == "Password changed successfully"
+            
+            logfire.info("Password changed successfully", user_id="user:123")
     
     def test_reset_password_request(self, client, mock_user_service):
         """Test password reset request."""
+        logfire.info("Testing password reset request", test_case="reset_password_request")
+        
         mock_user_service.get_user_by_email.return_value = UserResponse(
             id="user:123",
             email="test@example.com",
@@ -220,9 +252,13 @@ class TestAuthAPI:
         
         assert response.status_code == 200
         assert "Password reset email sent" in response.json()["message"]
+        
+        logfire.info("Password reset email sent", email="test@example.com")
     
     def test_me_endpoint(self, client, auth_headers):
         """Test current user endpoint."""
+        logfire.info("Testing current user endpoint", test_case="me_endpoint")
+        
         with patch('app.api.v1.auth.get_current_user') as mock_get_user:
             mock_get_user.return_value = UserResponse(
                 id="user:123",
@@ -245,3 +281,5 @@ class TestAuthAPI:
             data = response.json()
             assert data["email"] == "test@example.com"
             assert data["id"] == "user:123"
+            
+            logfire.info("Current user retrieved successfully", user_id=data["id"])

@@ -1,10 +1,12 @@
 """
 End-to-end tests for patient management workflow
+Per Production Proposal: Add Logfire instrumentation to all test cases
 """
 import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 import asyncio
+import logfire
 
 from app.main import app
 from app.database.connection import DatabaseConnection
@@ -67,6 +69,8 @@ class TestPatientWorkflowE2E:
     @pytest.mark.asyncio
     async def test_complete_patient_onboarding_workflow(self, client, test_provider):
         """Test complete patient onboarding workflow."""
+        logfire.info("E2E Test: Starting patient onboarding workflow", test_case="patient_onboarding_workflow")
+        
         headers = test_provider["headers"]
         
         # Step 1: Create a new patient
@@ -105,6 +109,8 @@ class TestPatientWorkflowE2E:
         patient = response.json()
         patient_id = patient["id"]
         
+        logfire.info("E2E Test: Patient created successfully", patient_id=patient_id, mrn=patient_data["medical_record_number"])
+        
         # Step 2: Add initial health information
         health_info = {
             "conditions": ["Type 2 Diabetes", "Hypertension"],
@@ -136,6 +142,8 @@ class TestPatientWorkflowE2E:
         )
         assert response.status_code == 200
         
+        logfire.info("E2E Test: Health information added", patient_id=patient_id, conditions=len(health_info["conditions"]), medications=len(health_info["medications"]))
+        
         # Step 3: Schedule initial appointment
         appointment_data = {
             "patient_id": patient_id,
@@ -145,6 +153,8 @@ class TestPatientWorkflowE2E:
             "duration_minutes": 60,
             "notes": "New patient intake and assessment"
         }
+        
+        logfire.info("E2E Test: Scheduling initial appointment", patient_id=patient_id)
         
         response = client.post(
             "/api/v1/appointments/",

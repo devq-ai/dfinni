@@ -1,11 +1,13 @@
 """
 End-to-end tests for authentication and authorization workflows
+Per Production Proposal: Add Logfire instrumentation to all test cases
 """
 import pytest
 from fastapi.testclient import TestClient
 from datetime import datetime, timedelta
 import asyncio
 import jwt
+import logfire
 
 from app.main import app
 from app.config.settings import get_settings
@@ -26,6 +28,8 @@ class TestAuthWorkflowE2E:
     @pytest.mark.asyncio
     async def test_complete_registration_and_login_workflow(self, client):
         """Test complete user registration and login workflow."""
+        logfire.info("E2E Test: Starting complete registration and login workflow", test_case="complete_registration_workflow")
+        
         # Step 1: Register new provider
         registration_data = {
             "email": "new.provider@example.com",
@@ -47,6 +51,8 @@ class TestAuthWorkflowE2E:
         assert user["password_reset_required"] is True  # New users must reset password
         assert "password" not in user  # Password should not be returned
         
+        logfire.info("E2E Test: User registered successfully", user_id=user.get("id"), email=user["email"])
+        
         # Step 2: Attempt login with new account
         response = client.post(
             "/api/v1/auth/login",
@@ -63,6 +69,8 @@ class TestAuthWorkflowE2E:
         assert tokens["token_type"] == "Bearer"
         assert tokens["user"]["password_reset_required"] is True
         
+        logfire.info("E2E Test: Login successful with password reset required", user_email=registration_data["email"])
+        
         # Step 3: Access protected endpoint (should prompt for password reset)
         headers = {"Authorization": f"Bearer {tokens['access_token']}"}
         
@@ -74,6 +82,8 @@ class TestAuthWorkflowE2E:
         assert response.status_code == 200
         assert "X-Password-Reset-Required" in response.headers
         
+        logfire.info("E2E Test: Protected endpoint accessed with password reset warning")
+        
         # Step 4: Change password
         response = client.post(
             "/api/v1/auth/change-password",
@@ -84,6 +94,8 @@ class TestAuthWorkflowE2E:
             }
         )
         assert response.status_code == 200
+        
+        logfire.info("E2E Test: Password changed successfully")
         
         # Step 5: Login with new password
         response = client.post(
@@ -98,6 +110,8 @@ class TestAuthWorkflowE2E:
         new_tokens = response.json()
         assert new_tokens["user"]["password_reset_required"] is False
         
+        logfire.info("E2E Test: Login with new password successful, reset no longer required")
+        
         # Step 6: Verify account is fully active
         headers = {"Authorization": f"Bearer {new_tokens['access_token']}"}
         
@@ -110,10 +124,14 @@ class TestAuthWorkflowE2E:
         me = response.json()
         assert me["is_active"] is True
         assert me["password_reset_required"] is False
+        
+        logfire.info("E2E Test: Registration and login workflow completed successfully", user_id=me.get("id"))
     
     @pytest.mark.asyncio
     async def test_token_refresh_workflow(self, client):
         """Test token refresh workflow."""
+        logfire.info("E2E Test: Starting token refresh workflow", test_case="token_refresh_workflow")
+        
         # Register and login
         client.post(
             "/api/v1/auth/register",
@@ -143,6 +161,8 @@ class TestAuthWorkflowE2E:
         response = client.get("/api/v1/auth/me", headers=headers)
         assert response.status_code == 200
         
+        logfire.info("E2E Test: Initial access token verified")
+        
         # Wait for token to be close to expiry (in real scenario)
         # For testing, we'll just refresh immediately
         
@@ -157,10 +177,14 @@ class TestAuthWorkflowE2E:
         assert new_tokens["access_token"] != access_token  # Should be different
         assert new_tokens["refresh_token"] != refresh_token  # Should also be different
         
+        logfire.info("E2E Test: Tokens refreshed successfully")
+        
         # Verify new access token works
         new_headers = {"Authorization": f"Bearer {new_tokens['access_token']}"}
         response = client.get("/api/v1/auth/me", headers=new_headers)
         assert response.status_code == 200
+        
+        logfire.info("E2E Test: New access token works correctly")
         
         # Verify old refresh token is invalidated
         response = client.post(
@@ -168,10 +192,14 @@ class TestAuthWorkflowE2E:
             json={"refresh_token": refresh_token}
         )
         assert response.status_code == 401
+        
+        logfire.info("E2E Test: Old refresh token properly invalidated")
     
     @pytest.mark.asyncio
     async def test_password_reset_workflow(self, client):
         """Test complete password reset workflow."""
+        logfire.info("E2E Test: Starting password reset workflow", test_case="password_reset_workflow")
+        
         # Create user
         email = "reset.test@example.com"
         
@@ -193,6 +221,8 @@ class TestAuthWorkflowE2E:
         )
         assert response.status_code == 200
         assert "email sent" in response.json()["message"].lower()
+        
+        logfire.info("E2E Test: Password reset email requested", email=email)
         
         # In real scenario, user would receive email with reset token
         # For testing, we'll simulate getting the reset token
@@ -231,6 +261,8 @@ class TestAuthWorkflowE2E:
     @pytest.mark.asyncio
     async def test_role_based_access_control_workflow(self, client):
         """Test role-based access control across different endpoints."""
+        logfire.info("E2E Test: Starting role-based access control workflow", test_case="rbac_workflow")
+        
         # Create users with different roles
         users = {
             "admin": {

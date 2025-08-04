@@ -1,9 +1,11 @@
 """
 Unit tests for PatientService
+Per Production Proposal: Add Logfire instrumentation to all test cases
 """
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
 from datetime import datetime
+import logfire
 
 from app.services.patient_service import PatientService
 from app.models.patient import PatientCreate, PatientUpdate, PatientResponse, PatientStatus
@@ -17,6 +19,8 @@ class TestPatientService:
     @pytest.mark.asyncio
     async def test_create_patient_success(self, patient_service, patient_data, mock_db):
         """Test successful patient creation."""
+        logfire.info("Testing patient creation", test_case="create_patient_success")
+        
         # Mock database response
         mock_db.create.return_value = [{
             "id": "patient:123",
@@ -27,6 +31,8 @@ class TestPatientService:
         }]
         
         patient_create = PatientCreate(**patient_data)
+        logfire.info("Creating patient", mrn=patient_data["medical_record_number"])
+        
         result = await patient_service.create_patient(patient_create, "user:456")
         
         assert result.id == "patient:123"
@@ -34,19 +40,26 @@ class TestPatientService:
         assert result.last_name == patient_data["last_name"]
         assert result.medical_record_number == patient_data["medical_record_number"]
         
+        logfire.info("Patient created successfully", patient_id=result.id)
+        
         # Verify database call
         mock_db.create.assert_called_once()
     
     @pytest.mark.asyncio
     async def test_create_patient_duplicate_mrn(self, patient_service, patient_data, mock_db):
         """Test patient creation with duplicate MRN."""
+        logfire.info("Testing duplicate MRN handling", test_case="create_patient_duplicate_mrn")
+        
         # Mock database to raise exception for duplicate
         mock_db.create.side_effect = Exception("Duplicate medical_record_number")
         
         patient_create = PatientCreate(**patient_data)
         
         with pytest.raises(Exception, match="Duplicate medical_record_number"):
+            logfire.info("Attempting to create duplicate patient", mrn=patient_data["medical_record_number"])
             await patient_service.create_patient(patient_create, "user:456")
+            
+        logfire.info("Duplicate MRN properly rejected")
     
     @pytest.mark.asyncio
     async def test_get_patient_by_id_found(self, patient_service, patient_data, mock_db):

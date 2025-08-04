@@ -1,9 +1,11 @@
 """
 Integration tests for patient API endpoints
+Per Production Proposal: Add Logfire instrumentation to all test cases
 """
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch, AsyncMock
+import logfire
 
 from app.main import app
 from app.models.patient import PatientResponse, PatientStatus
@@ -47,6 +49,8 @@ class TestPatientAPI:
     
     def test_create_patient_success(self, client, auth_headers, mock_current_user, mock_patient_service, patient_data):
         """Test successful patient creation."""
+        logfire.info("Testing patient creation API", test_case="create_patient_success")
+        
         # Mock service response
         mock_patient_service.create_patient.return_value = PatientResponse(
             id="patient:123",
@@ -67,9 +71,15 @@ class TestPatientAPI:
         assert data["id"] == "patient:123"
         assert data["medical_record_number"] == patient_data["medical_record_number"]
         assert data["created_by"] == "user:123"
+        
+        logfire.info("Patient created via API successfully", 
+                    patient_id="patient:123", 
+                    mrn=patient_data["medical_record_number"])
     
     def test_create_patient_invalid_data(self, client, auth_headers, mock_current_user):
         """Test patient creation with invalid data."""
+        logfire.info("Testing patient creation with invalid data", test_case="create_patient_invalid_data")
+        
         # Missing required fields
         response = client.post(
             "/api/v1/patients/",
@@ -81,9 +91,13 @@ class TestPatientAPI:
         )
         
         assert response.status_code == 422
+        
+        logfire.info("Invalid patient data properly rejected")
     
     def test_get_patients_list(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test getting list of patients."""
+        logfire.info("Testing patient list retrieval", test_case="get_patients_list")
+        
         # Mock service response
         mock_patient_service.get_patients.return_value = [
             PatientResponse(
@@ -123,9 +137,13 @@ class TestPatientAPI:
         assert len(data) == 2
         assert data[0]["id"] == "patient:1"
         assert data[1]["id"] == "patient:2"
+        
+        logfire.info("Patient list retrieved successfully", patient_count=2)
     
     def test_get_patients_with_filters(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test getting patients with filters."""
+        logfire.info("Testing patient list with filters", test_case="get_patients_with_filters")
+        
         mock_patient_service.get_patients.return_value = []
         
         response = client.get(
@@ -147,9 +165,13 @@ class TestPatientAPI:
             status=PatientStatus.ACTIVE,
             search="john"
         )
+        
+        logfire.info("Filtered patient list retrieved", status="active", search="john")
     
     def test_get_patient_by_id_success(self, client, auth_headers, mock_current_user, mock_patient_service, patient_data):
         """Test getting patient by ID."""
+        logfire.info("Testing patient retrieval by ID", test_case="get_patient_by_id_success")
+        
         # Mock service response
         mock_patient_service.get_patient.return_value = PatientResponse(
             id="patient:123",
@@ -168,9 +190,13 @@ class TestPatientAPI:
         data = response.json()
         assert data["id"] == "patient:123"
         assert data["medical_record_number"] == patient_data["medical_record_number"]
+        
+        logfire.info("Patient retrieved by ID successfully", patient_id="patient:123")
     
     def test_get_patient_by_id_not_found(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test getting non-existent patient."""
+        logfire.info("Testing non-existent patient retrieval", test_case="get_patient_by_id_not_found")
+        
         # Mock service to return None
         mock_patient_service.get_patient.return_value = None
         
@@ -181,9 +207,13 @@ class TestPatientAPI:
         
         assert response.status_code == 404
         assert "Patient not found" in response.json()["detail"]
+        
+        logfire.info("Non-existent patient properly handled", patient_id="patient:999")
     
     def test_update_patient_success(self, client, auth_headers, mock_current_user, mock_patient_service, patient_data):
         """Test updating patient."""
+        logfire.info("Testing patient update", test_case="update_patient_success")
+        
         # Mock service response
         updated_data = patient_data.copy()
         updated_data["phone"] = "555-9999"
@@ -205,9 +235,13 @@ class TestPatientAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["phone"] == "555-9999"
+        
+        logfire.info("Patient updated successfully", patient_id="patient:123", field="phone")
     
     def test_delete_patient_success(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test deleting patient (admin only)."""
+        logfire.info("Testing patient deletion by admin", test_case="delete_patient_success")
+        
         # Change user role to admin
         mock_current_user.role = "admin"
         
@@ -220,9 +254,13 @@ class TestPatientAPI:
         )
         
         assert response.status_code == 204
+        
+        logfire.info("Patient deleted successfully", patient_id="patient:123")
     
     def test_delete_patient_forbidden(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test deleting patient without admin role."""
+        logfire.info("Testing patient deletion without admin role", test_case="delete_patient_forbidden")
+        
         # User is provider, not admin
         mock_current_user.role = "provider"
         
@@ -233,9 +271,13 @@ class TestPatientAPI:
         
         assert response.status_code == 403
         assert "Admin access required" in response.json()["detail"]
+        
+        logfire.info("Non-admin deletion properly rejected", user_role="provider")
     
     def test_search_patients(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test patient search endpoint."""
+        logfire.info("Testing patient search", test_case="search_patients")
+        
         # Mock service response
         mock_patient_service.search_patients.return_value = [
             PatientResponse(
@@ -262,9 +304,13 @@ class TestPatientAPI:
         data = response.json()
         assert len(data) == 1
         assert data[0]["first_name"] == "John"
+        
+        logfire.info("Patient search completed successfully", query="john", results=1)
     
     def test_update_patient_status(self, client, auth_headers, mock_current_user, mock_patient_service, patient_data):
         """Test updating patient status."""
+        logfire.info("Testing patient status update", test_case="update_patient_status")
+        
         # Mock service response
         updated_data = patient_data.copy()
         updated_data["status"] = "inactive"
@@ -289,9 +335,15 @@ class TestPatientAPI:
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "inactive"
+        
+        logfire.info("Patient status updated successfully", 
+                    patient_id="patient:123", 
+                    new_status="inactive")
     
     def test_patient_statistics(self, client, auth_headers, mock_current_user, mock_patient_service):
         """Test patient statistics endpoint."""
+        logfire.info("Testing patient statistics retrieval", test_case="patient_statistics")
+        
         # Mock service response
         mock_patient_service.get_patient_statistics.return_value = {
             "total": 100,
@@ -314,3 +366,8 @@ class TestPatientAPI:
         data = response.json()
         assert data["total"] == 100
         assert data["active"] == 80
+        
+        logfire.info("Patient statistics retrieved successfully", 
+                    total=100, 
+                    active=80, 
+                    inactive=15)

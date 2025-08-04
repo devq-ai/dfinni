@@ -1,15 +1,25 @@
 """
 Global pytest configuration and fixtures for PFINNI Patient Dashboard tests.
+Per Production Proposal: Enable Logfire logging in all tests for observability
 """
 import asyncio
 import pytest
+import pytest_asyncio
 from typing import AsyncGenerator, Generator
 from unittest.mock import Mock, AsyncMock
 import os
 import sys
+import logfire
 
 # Add the app directory to Python path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
+
+# Configure Logfire for testing per Production Proposal
+logfire.configure(
+    service_name="pfinni-backend-tests",
+    environment="testing",
+    send_to_logfire=os.getenv("PFINNI_LOGFIRE_TOKEN") is not None  # Only send if token exists
+)
 
 from app.database.connection import DatabaseConnection
 from app.services.auth_service import AuthService
@@ -27,7 +37,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def mock_db() -> AsyncGenerator[AsyncMock, None]:
     """Mock database connection."""
     mock = AsyncMock(spec=DatabaseConnection)
@@ -97,7 +107,7 @@ def auth_headers() -> dict:
     }
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_client():
     """Create test client for API testing."""
     from fastapi.testclient import TestClient
@@ -160,6 +170,58 @@ def alert_data():
         "triggered_by": "system",
         "requires_action": True
     }
+
+
+# Logfire fixture for test logging
+@pytest.fixture(autouse=True)
+def log_test_info(request):
+    """Automatically log test information to Logfire."""
+    test_name = request.node.name
+    test_file = request.node.parent.name
+    test_markers = [marker.name for marker in request.node.iter_markers()]
+    
+    logfire.info(
+        "Test started",
+        test_name=test_name,
+        test_file=test_file,
+        markers=test_markers
+    )
+    
+    yield
+    
+    # Log test result
+    if hasattr(request.node, 'rep_call'):
+        outcome = request.node.rep_call.outcome
+        duration = request.node.rep_call.duration
+        
+        if outcome == 'passed':
+            logfire.info(
+                "Test passed",
+                test_name=test_name,
+                duration_seconds=duration
+            )
+        elif outcome == 'failed':
+            logfire.error(
+                "Test failed",
+                test_name=test_name,
+                duration_seconds=duration,
+                error=str(request.node.rep_call.longrepr)
+            )
+        elif outcome == 'skipped':
+            logfire.info(
+                "Test skipped",
+                test_name=test_name,
+                reason=str(request.node.rep_call.longrepr)
+            )
+
+
+# Hook to capture test results
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Capture test results for Logfire logging."""
+    outcome = yield
+    rep = outcome.get_result()
+    setattr(item, f"rep_{rep.when}", rep)
 
 
 # Marker configurations
