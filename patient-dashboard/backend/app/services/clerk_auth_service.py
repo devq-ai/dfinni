@@ -61,31 +61,115 @@ class ClerkAuthService:
         self._jwks_cache_time = None
         self._cache_duration = 300  # 5 minutes
         self.user_service = UserService()
+        
+        # Log configuration status at startup
+        self._log_configuration_status()
     
     def _extract_issuer_from_key(self) -> str:
         """Extract Clerk issuer domain from publishable key."""
         import base64
+        
+        # Default issuer for fallback
+        default_issuer = "talented-kid-76.clerk.accounts.dev"
+        
         try:
-            if not self.clerk_publishable_key or '_' not in self.clerk_publishable_key:
-                logfire.warning("Invalid Clerk publishable key format")
-                return "talented-kid-76.clerk.accounts.dev"
-                
+            if not self.clerk_publishable_key:
+                logfire.info(
+                    "Clerk publishable key not configured, using default issuer",
+                    issuer=default_issuer
+                )
+                return default_issuer
+            
+            # Check key format
+            if not self.clerk_publishable_key.startswith(('pk_test_', 'pk_live_')):
+                logfire.warning(
+                    "Clerk publishable key has unexpected prefix",
+                    key_prefix=self.clerk_publishable_key[:10] + "..." if len(self.clerk_publishable_key) > 10 else self.clerk_publishable_key
+                )
+                return default_issuer
+            
+            # Split the key
             key_parts = self.clerk_publishable_key.split('_', 2)
             if len(key_parts) < 3:
-                logfire.warning("Clerk key doesn't have expected format")
-                return "talented-kid-76.clerk.accounts.dev"
-                
+                logfire.warning(
+                    "Clerk key doesn't have expected format (should be pk_[env]_[encoded])",
+                    parts_found=len(key_parts)
+                )
+                return default_issuer
+            
+            # Extract and decode the issuer
             key_part = key_parts[2]
+            
+            # Add padding if needed for base64 decoding
             padding = 4 - len(key_part) % 4
             if padding != 4:
                 key_part += '=' * padding
+            
+            # Decode the base64 part
             decoded = base64.b64decode(key_part).decode('utf-8')
+            
+            # Remove any trailing special characters
             decoded = decoded.rstrip('$')
-            logfire.info("Extracted Clerk issuer", issuer=decoded)
-            return decoded
+            
+            # Validate the decoded issuer looks like a domain
+            if '.' in decoded and len(decoded) > 5:
+                logfire.info("Successfully extracted Clerk issuer", issuer=decoded)
+                return decoded
+            else:
+                logfire.warning(
+                    "Decoded issuer doesn't look like a valid domain",
+                    decoded=decoded
+                )
+                return default_issuer
+                
+        except base64.binascii.Error as e:
+            logfire.error(
+                "Failed to decode base64 part of Clerk key",
+                error=str(e)
+            )
+            return default_issuer
         except Exception as e:
-            logfire.error("Failed to extract issuer", error=str(e))
-            return "talented-kid-76.clerk.accounts.dev"
+            logfire.error(
+                "Unexpected error extracting issuer from Clerk key",
+                error=str(e),
+                error_type=type(e).__name__
+            )
+            return default_issuer
+    
+    def _log_configuration_status(self):
+        """Log Clerk configuration status at startup."""
+        config_status = {
+            "publishable_key_configured": bool(self.clerk_publishable_key),
+            "secret_key_configured": bool(self.clerk_secret_key),
+            "issuer": self.clerk_issuer,
+            "jwks_url": self.jwks_url
+        }
+        
+        if self.clerk_publishable_key:
+            # Log key format info without exposing the actual key
+            if self.clerk_publishable_key.startswith("pk_test_"):
+                config_status["environment"] = "test"
+            elif self.clerk_publishable_key.startswith("pk_live_"):
+                config_status["environment"] = "production"
+            else:
+                config_status["environment"] = "unknown"
+            
+            config_status["key_length"] = len(self.clerk_publishable_key)
+        
+        if config_status["publishable_key_configured"] and config_status["secret_key_configured"]:
+            logfire.info("Clerk authentication service initialized", **config_status)
+        else:
+            missing = []
+            if not config_status["publishable_key_configured"]:
+                missing.append("PFINNI_CLERK_PUBLISHABLE_KEY")
+            if not config_status["secret_key_configured"]:
+                missing.append("PFINNI_CLERK_SECRET_KEY")
+            
+            logfire.warning(
+                "Clerk authentication service initialized with missing configuration",
+                missing_vars=missing,
+                **config_status
+            )
     
     @lru_cache(maxsize=128)
     async def get_jwks(self) -> Dict[str, Any]:
