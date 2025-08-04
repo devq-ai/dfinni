@@ -4,7 +4,7 @@ Core dependencies for FastAPI endpoints.
 from typing import Optional
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, UserResponse
 from app.services.clerk_auth_service import clerk_auth_service
 import logfire
 
@@ -14,37 +14,26 @@ security = HTTPBearer()
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> User:
+) -> UserResponse:
     """
     Get the current authenticated user from the JWT token.
+    Uses Clerk authentication to verify tokens and sync user data.
     """
     try:
         # Extract token
         token = credentials.credentials
         
-        # Verify with Clerk
+        # Verify with Clerk and get claims
         claims = await clerk_auth_service.verify_clerk_token(token)
         
-        if not claims:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials"
-            )
-        
-        # Extract user information from claims
-        user = User(
-            id=claims.get("sub", ""),
-            email=claims.get("email", ""),
-            first_name=claims.get("first_name", ""),
-            last_name=claims.get("last_name", ""),
-            role=UserRole(claims.get("role", "VIEWER")),
-            is_active=True
-        )
+        # Get or create user from Clerk claims
+        user = await clerk_auth_service.get_or_create_user_from_clerk(claims)
         
         logfire.info(
-            "User authenticated",
+            "User authenticated via Clerk",
             user_id=user.id,
-            user_email=user.email,
+            clerk_user_id=claims.sub,
+            email=user.email,
             role=user.role
         )
         
@@ -60,7 +49,7 @@ async def get_current_user(
         )
 
 
-def require_role(user: User, allowed_roles: list[UserRole]) -> None:
+def require_role(user: UserResponse, allowed_roles: list[UserRole]) -> None:
     """
     Check if the user has one of the required roles.
     
@@ -86,7 +75,7 @@ def require_role(user: User, allowed_roles: list[UserRole]) -> None:
 
 async def get_optional_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
-) -> Optional[User]:
+) -> Optional[UserResponse]:
     """
     Get the current user if authenticated, otherwise return None.
     """

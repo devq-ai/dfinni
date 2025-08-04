@@ -78,13 +78,9 @@ class Settings(BaseSettings):
         env="PFINNI_ALLOWED_FILE_TYPES",
     )
 
-    # BetterAuth Configuration
-    BETTER_AUTH_SECRET: str = Field(env="PFINNI_BETTER_AUTH_SECRET")
-    BETTER_AUTH_URL: str = Field(default="http://localhost:8000", env="PFINNI_BETTER_AUTH_URL")
-    BETTER_AUTH_DATABASE_URL: Optional[str] = Field(default=None, env="PFINNI_BETTER_AUTH_DATABASE_URL")
-    BETTER_AUTH_COOKIE_DOMAIN: str = Field(default="localhost", env="PFINNI_BETTER_AUTH_COOKIE_DOMAIN")
-    BETTER_AUTH_COOKIE_SECURE: bool = Field(default=False, env="PFINNI_BETTER_AUTH_COOKIE_SECURE")
-    BETTER_AUTH_SESSION_EXPIRES: str = Field(default="7d", env="PFINNI_BETTER_AUTH_SESSION_EXPIRES")
+    # Clerk Configuration (Primary Authentication)
+    CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_SECRET_KEY")
+    CLERK_PUBLISHABLE_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_PUBLISHABLE_KEY")
 
     # External Services
     LOGFIRE_TOKEN: Optional[str] = Field(default=None, env="PFINNI_LOGFIRE_TOKEN")
@@ -92,8 +88,6 @@ class Settings(BaseSettings):
     LOGFIRE_PROJECT_NAME: str = Field(default="pfinni", env="PFINNI_LOGFIRE_PROJECT_NAME")
     RESEND_API_KEY: Optional[str] = Field(default=None, env="PFINNI_RESEND_API_KEY")
     ANTHROPIC_API_KEY: Optional[str] = Field(default=None, env="SHARED_ANTHROPIC_API_KEY")
-    CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_SECRET_KEY")
-    CLERK_PUBLISHABLE_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_PUBLISHABLE_KEY")
 
     # Insurance Integration
     INSURANCE_CLIENT_ID: Optional[str] = Field(default=None, env="PFINNI_INSURANCE_CLIENT_ID")
@@ -240,17 +234,6 @@ class Settings(BaseSettings):
             "enabled": self.ENABLE_INSURANCE_INTEGRATION,
         }
 
-    @property
-    def better_auth_config(self) -> dict:
-        """Get BetterAuth configuration dictionary."""
-        return {
-            "secret": self.BETTER_AUTH_SECRET,
-            "url": self.BETTER_AUTH_URL,
-            "database_url": self.BETTER_AUTH_DATABASE_URL or self.DATABASE_URL,
-            "cookie_domain": self.BETTER_AUTH_COOKIE_DOMAIN,
-            "cookie_secure": self.BETTER_AUTH_COOKIE_SECURE,
-            "session_expires": self.BETTER_AUTH_SESSION_EXPIRES,
-        }
 
 
 

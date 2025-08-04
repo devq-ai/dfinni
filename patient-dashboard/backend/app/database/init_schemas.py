@@ -48,8 +48,8 @@ async def execute_schema_statements(db, statements: List[str]) -> Tuple[int, int
     
     return success_count, error_count
 
-async def create_default_admin_user(db) -> None:
-    """Create a default admin user if none exists."""
+async def check_admin_user_exists(db) -> None:
+    """Check if any admin users exist in the system."""
     try:
         # Check if any admin users exist
         result = await db.execute(
@@ -57,29 +57,12 @@ async def create_default_admin_user(db) -> None:
         )
         
         if not result or not result[0].get('result'):
-            # Create default admin
-            from app.config.auth import BetterAuth
-            auth = BetterAuth()
-            
-            await db.execute("""
-                CREATE user SET
-                    email = 'admin@pfinni.local',
-                    password_hash = $password_hash,
-                    first_name = 'System',
-                    last_name = 'Admin',
-                    role = 'ADMIN',
-                    is_active = true
-            """, {
-                "password_hash": auth.hash_password("admin123!")
-            })
-            
-            logger.info("Created default admin user: admin@pfinni.local")
-            logger.warning("⚠️  Default admin password is 'admin123!' - CHANGE THIS IMMEDIATELY!")
+            logger.warning("⚠️  No admin users found. Please create an admin user through Clerk dashboard.")
         else:
-            logger.info("Admin user already exists")
+            logger.info("Admin user exists in the system")
             
     except Exception as e:
-        logger.error(f"Failed to create default admin user: {e}")
+        logger.error(f"Failed to check for admin users: {e}")
 
 async def main():
     """Initialize database schemas."""
@@ -105,8 +88,8 @@ async def main():
         logger.info(f"Schema initialization complete: {success} successful, {errors} errors")
         
         if errors == 0:
-            # Create default admin user
-            await create_default_admin_user(db)
+            # Check for admin users
+            await check_admin_user_exists(db)
             logger.info("✅ Database schema initialized successfully!")
         else:
             logger.error("❌ Schema initialization completed with errors")
