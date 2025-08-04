@@ -15,6 +15,7 @@ from app.models.user import (
 from app.services.user_service import UserService
 from app.services.auth_service import AuthService
 from app.services.clerk_auth_service import ClerkAuthService
+from app.services.enhanced_clerk_auth import enhanced_clerk_auth_service
 from app.core.exceptions import AuthenticationException, ValidationException
 from app.config.settings import get_settings
 from app.database.connection import get_database
@@ -48,11 +49,25 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Try Clerk verification first
+    # Try enhanced Clerk verification first
     try:
-        clerk_payload = await clerk_auth_service.verify_clerk_token(token)
-        # Get or create user from Clerk data
-        user = await clerk_auth_service.get_or_create_user_from_clerk(clerk_payload)
+        # Use enhanced Clerk auth service for better security
+        clerk_claims = await enhanced_clerk_auth_service.verify_clerk_token(token)
+        # Get or create user from validated claims
+        user = await enhanced_clerk_auth_service.get_or_create_user_from_clerk(clerk_claims)
+        
+        # Store session info in request state for audit
+        if hasattr(request, 'state'):
+            request.state.session_id = clerk_claims.sid
+            request.state.org_id = clerk_claims.org_id
+        
+        logfire.info(
+            "User authenticated via Clerk",
+            user_id=user.id,
+            clerk_user_id=clerk_claims.sub,
+            session_id=clerk_claims.sid
+        )
+        
         return user
     except HTTPException:
         # If Clerk verification fails, try internal JWT
@@ -76,6 +91,17 @@ async def get_current_user(
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+async def get_current_user_optional(
+    request: Request,
+    token: Optional[str] = Depends(oauth2_scheme)
+) -> Optional[UserResponse]:
+    """Get current authenticated user if available, return None if not authenticated."""
+    try:
+        return await get_current_user(request, token)
+    except HTTPException:
+        return None
 
 
 @router.post("/register", response_model=UserResponse)

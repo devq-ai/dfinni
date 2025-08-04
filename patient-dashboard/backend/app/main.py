@@ -22,6 +22,9 @@ from app.core.middleware import (
     RateLimitMiddleware,
     RequestValidationMiddleware,
 )
+from app.middleware.audit_middleware import AuditMiddleware, AuditedRoute
+from app.middleware.metrics_middleware import MetricsMiddleware
+from app.middleware.cache_middleware import CacheMiddleware
 from app.core.exceptions import (
     ValidationException,
     AuthenticationException,
@@ -46,6 +49,7 @@ from app.api.v1 import (
     chat,
     debug,
 )
+from app.api.v1.system_alerts import router as system_alerts
 from app.api.v1.test_clerk import router as test_clerk
 from app.api.v1.test_dashboard import router as test_dashboard
 from app.api.v1.test_patients import router as test_patients
@@ -78,6 +82,22 @@ async def lifespan(app: FastAPI):
     # Initialize monitoring
     if settings.ENABLE_METRICS:
         logger.info("Metrics collection enabled")
+    
+    # Initialize metrics service first (after logging is configured)
+    from app.services.metrics_service import metrics_service
+    metrics_service.initialize()
+    logger.info("Metrics service initialized")
+    
+    # Initialize audit service
+    from app.services.audit_service import audit_service
+    await audit_service.initialize()
+    logger.info("Audit service initialized")
+    
+    # Initialize alerting service
+    from app.services.alerting_service import alerting_service
+    await alerting_service.initialize()
+    logger.info("Alerting service initialized")
+    
 
     logger.info("Patient Dashboard API started successfully")
 
@@ -138,6 +158,9 @@ app.add_middleware(
 # Custom middleware
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(RequestValidationMiddleware)
+app.add_middleware(AuditMiddleware)  # Add audit middleware
+app.add_middleware(MetricsMiddleware)  # Add metrics middleware
+app.add_middleware(CacheMiddleware)  # Add cache middleware for performance
 
 if settings.RATE_LIMIT_ENABLED:
     app.add_middleware(
@@ -387,6 +410,12 @@ app.include_router(
     tags=["Test Patients Raw"],
 )
 
+app.include_router(
+    system_alerts,
+    prefix=f"{API_V1_PREFIX}/system-alerts",
+    tags=["System Alerts"],
+)
+
 
 # Root endpoint
 @app.get("/", tags=["Root"])
@@ -400,6 +429,11 @@ async def root():
         "status": "operational",
     }
 
+
+# Module can be run directly for testing
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
 
 # Add request ID to all responses
 @app.middleware("http")

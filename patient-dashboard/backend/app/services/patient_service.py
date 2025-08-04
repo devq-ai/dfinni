@@ -13,6 +13,7 @@ from app.models.patient import (
 from app.database.connection import get_database
 from app.core.exceptions import ValidationException, ResourceNotFoundException
 from app.config.logging import audit_logger
+from app.services.metrics_service import metrics_service
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +84,13 @@ class PatientService:
                     resource_id=patient_id,
                     user_id=created_by,
                     changes=patient_dict
+                )
+                
+                # Track metrics
+                metrics_service.track_patient_created(
+                    patient_id=patient_id,
+                    created_by=created_by,
+                    status=patient_dict.get("status", "active")
                 )
                 
                 # Get and return created patient

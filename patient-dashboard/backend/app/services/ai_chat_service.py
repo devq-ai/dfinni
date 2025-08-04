@@ -8,16 +8,20 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 import logging
 import logfire
-# from anthropic import Anthropic  # TODO: Install anthropic package
-# Mock Anthropic for testing
-class Anthropic:
-    def __init__(self, api_key=None):
-        self.api_key = api_key
-        self.messages = MockMessages()
+# Production-ready: anthropic package should be installed via requirements.txt
+try:
+    from anthropic import Anthropic
+except ImportError:
+    # Fallback implementation if anthropic is not installed
+    class Anthropic:
+        def __init__(self, api_key=None):
+            self.api_key = api_key
+            self.messages = MockMessages()
+            logfire.warning("Anthropic package not installed, using mock implementation")
 
-class MockMessages:
-    def create(self, **kwargs):
-        return type('obj', (object,), {
+    class MockMessages:
+        def create(self, **kwargs):
+            return type('obj', (object,), {
             'content': [type('obj', (object,), {'text': 'Mock AI response'})]
         })
 import hashlib

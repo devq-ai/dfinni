@@ -1,0 +1,59 @@
+# Cloudflare Tunnel Configuration for Patient Dashboard
+# Place this file at ~/.cloudflared/config.yml after creating tunnel
+
+# Tunnel credentials (auto-generated)
+tunnel: <TUNNEL_ID>
+credentials-file: /Users/dionedge/.cloudflared/<TUNNEL_ID>.json
+
+# Ingress rules
+ingress:
+  # Frontend application
+  - hostname: patient-dashboard.memorial-hc.com
+    service: http://localhost:3000
+    originRequest:
+      connectTimeout: 30s
+      noTLSVerify: false
+      
+  # Backend API
+  - hostname: api.patient-dashboard.memorial-hc.com
+    service: http://localhost:8001
+    originRequest:
+      connectTimeout: 30s
+      noTLSVerify: false
+      httpHostHeader: api.patient-dashboard.memorial-hc.com
+      
+  # SurrealDB Admin (optional, for development only)
+  # - hostname: db.patient-dashboard.memorial-hc.com
+  #   service: http://localhost:8000
+  #   originRequest:
+  #     connectTimeout: 30s
+  #     noTLSVerify: false
+  #     # Add access control
+  #     access:
+  #       required: true
+  #       teamName: "devops"
+      
+  # Catch-all rule
+  - service: http_status:404
+
+# Optional: Metrics server for tunnel
+# metrics: localhost:2000
+
+# Optional: Grace period for tunnel restart
+# grace-period: 30s
+
+# Optional: Compression
+# compression-quality: 0
+
+# Log settings
+loglevel: info
+logfile: /var/log/cloudflared.log
+
+# Update frequency for tunnel
+autoupdate-freq: 24h
+
+# Retries
+retries: 5
+
+# Protocol (auto, http2, h2mux)
+protocol: auto

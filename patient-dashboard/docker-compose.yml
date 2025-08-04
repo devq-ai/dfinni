@@ -4,169 +4,60 @@ services:
   # SurrealDB Database
   surrealdb:
     image: surrealdb/surrealdb:latest
-    container_name: patient-dashboard-db
+    container_name: pfinni-surrealdb
+    restart: unless-stopped
+    command: start --user $PFINNI_SURREALDB_USERNAME --pass $PFINNI_SURREALDB_PASSWORD
     ports:
-      - "8080:8000"
-    # Changed from memory to file-based storage
-    command: start --log trace --user root --pass root file://opt/surrealdb/data
+      - "8000:8000"
     volumes:
-      - surrealdb_data:/opt/surrealdb/data
+      - surrealdb-data:/data
     environment:
-      - SURREAL_LOG=trace
-      - SURREAL_USER=root
-      - SURREAL_PASS=root
+      - SURREAL_LOG=info
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-    networks:
-      - patient_dashboard_network
-
-  # SurrealDB Cache (using same instance as main DB with different namespace)
-  # Cache operations use separate database/namespace for isolation
 
   # Backend API
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: patient-dashboard-backend
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pfinni-backend
+    restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8001:8001"
+    env_file:
+      - /Users/dionedge/devqai/.env
     environment:
-      - DATABASE_URL=ws://surrealdb:8000
-      - CACHE_DATABASE_URL=ws://surrealdb:8000
-      - DATABASE_USER=root
-      - DATABASE_PASS=root
-      - SECRET_KEY=${SECRET_KEY:-development-secret-key}
-      - ENVIRONMENT=development
-      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-    volumes:
-      - ./backend:/app
-      - /app/__pycache__
+      - PFINNI_SURREALDB_URL=ws://surrealdb:8000/rpc
+      - ENVIRONMENT=production
     depends_on:
       surrealdb:
         condition: service_healthy
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-    networks:
-      - patient_dashboard_network
 
-  # Frontend
+  # Frontend Application
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: patient-dashboard-frontend
+    container_name: pfinni-frontend
+    restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-development-nextauth-secret}
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+      - NEXT_PUBLIC_API_URL=http://backend:8001
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$PFINNI_CLERK_PUBLISHABLE_KEY
     depends_on:
-      - backend
-    command: npm run dev
-    networks:
-      - patient_dashboard_network
-
-  # Background Job Worker (SurrealDB-based)
-  worker:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    container_name: patient-dashboard-worker
-    environment:
-      - DATABASE_URL=ws://surrealdb:8000
-      - JOB_QUEUE_DATABASE_URL=ws://surrealdb:8000
-      - DATABASE_USER=root
-      - DATABASE_PASS=root
-      - SECRET_KEY=${SECRET_KEY:-development-secret-key}
-      - ENVIRONMENT=development
-      - LOGFIRE_TOKEN=${LOGFIRE_TOKEN}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-    volumes:
-      - ./backend:/app
-    depends_on:
-      surrealdb:
+      backend:
         condition: service_healthy
-    command: python -m app.workers.surreal_worker
-    networks:
-      - patient_dashboard_network
-
-  # NGINX Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: patient-dashboard-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./infrastructure/nginx/conf.d:/etc/nginx/conf.d
-      - ./infrastructure/ssl:/etc/nginx/ssl
-    depends_on:
-      - backend
-      - frontend
-    networks:
-      - patient_dashboard_network
-
-  # Monitoring - Prometheus
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: patient-dashboard-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--web.enable-lifecycle'
-    networks:
-      - patient_dashboard_network
-
-  # Monitoring - Grafana
-  grafana:
-    image: grafana/grafana:latest
-    container_name: patient-dashboard-grafana
-    ports:
-      - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
-      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
-    depends_on:
-      - prometheus
-    networks:
-      - patient_dashboard_network
 
 volumes:
-  surrealdb_data:
+  surrealdb-data:
     driver: local
-  prometheus_data:
-    driver: local
-  grafana_data:
-    driver: local
-
-networks:
-  patient_dashboard_network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16

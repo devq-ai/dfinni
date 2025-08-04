@@ -6,6 +6,12 @@ import logging
 import structlog
 from typing import Any, Dict
 
+# Set LOGFIRE_TOKEN before importing logfire
+from dotenv import load_dotenv
+load_dotenv('/Users/dionedge/devqai/.env')
+if os.getenv('PFINNI_LOGFIRE_TOKEN'):
+    os.environ['LOGFIRE_TOKEN'] = os.getenv('PFINNI_LOGFIRE_TOKEN')
+
 import logfire
 
 def configure_logging() -> None:
@@ -17,20 +23,29 @@ def configure_logging() -> None:
     
     # Configure Logfire using Ptolemies pattern - simple and automatic
     try:
-        # Use LOGFIRE_WRITE_TOKEN specifically
-        token = os.getenv('LOGFIRE_WRITE_TOKEN') or os.getenv('LOGFIRE_TOKEN')
-        if token:
-            os.environ['LOGFIRE_TOKEN'] = token
+        # Token already set before import
+        token = os.getenv('LOGFIRE_TOKEN')
+        if not token:
+            print("❌ No LOGFIRE_TOKEN found!")
+            raise ValueError("No LOGFIRE_TOKEN found")
             
-        # Configure with explicit settings
-        # Force correct project name
-        os.environ['LOGFIRE_PROJECT_NAME'] = 'pfinni'
+        # Get settings for other config
+        from app.config.settings import get_settings
+        settings = get_settings()
+            
+        # Configure with settings from environment
+        service_name = settings.LOGFIRE_SERVICE_NAME
+        project_name = settings.LOGFIRE_PROJECT_NAME
+        
+        # Set environment variables for Logfire
+        os.environ['LOGFIRE_PROJECT_NAME'] = project_name
         
         logfire.configure(
-            token=token,
-            service_name='pfinni-backend',
+            service_name=service_name,
             service_version='1.0.0',
-            console=False  # Disable console output to reduce noise
+            console=False,  # Disable console output in production
+            send_to_logfire=True,  # Explicitly enable sending to Logfire
+            inspect_arguments=False  # Disable argument inspection to avoid warnings
         )
         
         # Send startup log
@@ -38,12 +53,13 @@ def configure_logging() -> None:
             "Logfire initialized", 
             service="pfinni-patient-dashboard",
             environment=environment,
-            version="1.0.0"
+            version="1.0.0",
+            token_preview=token[:20] + "..." if token else "None"
         )
         
         # Don't print in production to avoid cluttering logs
         if environment == "development":
-            print("✅ Logfire configured successfully")
+            print(f"✅ Logfire configured successfully with token: {token[:20]}...")
     except Exception as e:
         if environment == "development":
             print(f"❌ Logfire configuration failed: {e}")

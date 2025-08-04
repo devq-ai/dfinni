@@ -1,10 +1,18 @@
 #!/usr/bin/env python3
 """Generate a valid JWT token for testing"""
 import jwt
+import os
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 
-# Use the same secret key from the environment
-JWT_SECRET_KEY = "775d66a5467d455c5d90685fb2072d7f8696688f61cfe7e21bfcc555810374b2"
+# Load environment variables
+load_dotenv('/Users/dionedge/devqai/.env')
+
+# Get secret key from environment
+JWT_SECRET_KEY = os.getenv('PFINNI_JWT_SECRET_KEY')
+if not JWT_SECRET_KEY:
+    print("ERROR: PFINNI_JWT_SECRET_KEY not found in environment")
+    exit(1)
 
 # Create a token for the admin user
 payload = {

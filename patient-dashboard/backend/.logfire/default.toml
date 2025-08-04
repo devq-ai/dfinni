@@ -1,9 +1,0 @@
-[tokens."https://logfire-us.pydantic.dev"]
-token = "pylf_v1_us_T6lpqTTbCXH4T56JlgCdM2qMhH3cZyrwTG1ZDvLk2xyC"
-expiration = "2026-07-28T00:00:00.000000Z"
-
-[projects]
-"devq-ai/pfinni" = {organization_name = "devq-ai", project_name = "pfinni"}
-
-[default_project]
-project_slug = "devq-ai/pfinni"

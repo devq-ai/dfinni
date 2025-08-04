@@ -1,14 +1,29 @@
 import asyncio
 import bcrypt
+import os
+from getpass import getpass
 from surrealdb import AsyncSurreal
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv('/Users/dionedge/devqai/.env')
 
 async def create_admin():
+    # Get database connection from environment
+    db_url = os.getenv('PFINNI_SURREALDB_URL', 'ws://localhost:8000/rpc')
+    db_name = os.getenv('PFINNI_SURREALDB_DATABASE', 'patient_dashboard')
+    db_namespace = os.getenv('PFINNI_SURREALDB_NAMESPACE', 'patient_dashboard')
+    
     # Connect to SurrealDB using async client
-    async with AsyncSurreal("ws://localhost:8000/rpc") as db:
-        await db.use("patient_dashboard", "patient_dashboard")
+    async with AsyncSurreal(db_url) as db:
+        await db.use(db_namespace, db_name)
         
-        # Hash the password
-        password = "admin123!"
+        # Get password from environment or prompt
+        password = os.getenv('ADMIN_PASSWORD') or getpass("Enter admin password: ")
+        if not password:
+            print("Password is required!")
+            return
+            
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
         # Check if admin already exists

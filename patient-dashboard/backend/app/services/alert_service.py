@@ -320,12 +320,92 @@ class AlertService:
     
     async def evaluate_alert_rules(self, patient_id: str) -> Dict[str, Any]:
         """Evaluate alert rules for a patient."""
-        # This would integrate with a rule engine
-        # For now, return a mock response
-        return {
-            "triggered_alerts": [],
-            "rules_evaluated": 0
-        }
+        db = await get_database()
+        triggered_alerts = []
+        rules_evaluated = 0
+        
+        try:
+            # Get patient data
+            patient_result = await db.execute(
+                "SELECT * FROM patient WHERE id = $patient_id",
+                {"patient_id": patient_id}
+            )
+            
+            if not patient_result or not patient_result[0]:
+                return {
+                    "triggered_alerts": [],
+                    "rules_evaluated": 0,
+                    "error": "Patient not found"
+                }
+            
+            patient = patient_result[0]
+            
+            # Rule 1: High risk patient without recent checkup
+            rules_evaluated += 1
+            if patient.get('risk_level') == 'High':
+                # Check for recent alerts
+                recent_alert = await db.execute(
+                    """
+                    SELECT * FROM alert 
+                    WHERE patient_id = $patient_id 
+                    AND type = 'HIGH_RISK_FOLLOWUP' 
+                    AND created_at > time::now() - 30d
+                    LIMIT 1
+                    """,
+                    {"patient_id": patient_id}
+                )
+                
+                if not recent_alert:
+                    triggered_alerts.append({
+                        "rule": "high_risk_followup",
+                        "severity": "high",
+                        "message": "High risk patient requires follow-up"
+                    })
+            
+            # Rule 2: Overdue insurance verification
+            rules_evaluated += 1
+            if patient.get('insurance', {}).get('verification_status') == 'pending':
+                triggered_alerts.append({
+                    "rule": "insurance_verification",
+                    "severity": "medium",
+                    "message": "Insurance verification overdue"
+                })
+            
+            # Rule 3: Missing critical information
+            rules_evaluated += 1
+            if not patient.get('emergency_contact'):
+                triggered_alerts.append({
+                    "rule": "missing_emergency_contact",
+                    "severity": "low",
+                    "message": "Emergency contact information missing"
+                })
+            
+            # Create alerts for triggered rules
+            for alert_data in triggered_alerts:
+                await self.create_alert(
+                    AlertCreate(
+                        patient_id=patient_id,
+                        type=AlertType.SYSTEM_GENERATED,
+                        severity=AlertSeverity(alert_data['severity']),
+                        title=alert_data['message'],
+                        description=f"Automated alert from rule: {alert_data['rule']}",
+                        metadata={"rule": alert_data['rule']}
+                    ),
+                    created_by="system"
+                )
+            
+            return {
+                "triggered_alerts": triggered_alerts,
+                "rules_evaluated": rules_evaluated
+            }
+            
+        except Exception as e:
+            logfire.error("Error evaluating alert rules", error=str(e), patient_id=patient_id)
+            return {
+                "triggered_alerts": [],
+                "rules_evaluated": rules_evaluated,
+                "error": str(e)
+            }
     
     async def get_alert_history(
         self,

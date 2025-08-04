@@ -148,12 +148,46 @@ class UserService:
                 return None
             
             user_data = result[0]
-            # Keep full RecordID format
             user_data['id'] = str(user_data['id'])
             return UserResponse(**user_data)
             
         except Exception as e:
-            raise DatabaseException(f"Failed to get user: {str(e)}")
+            raise DatabaseException(f"Failed to get user by email: {str(e)}")
+    
+    async def get_user_by_clerk_id(self, clerk_user_id: str) -> Optional[UserResponse]:
+        """Get user by Clerk user ID."""
+        try:
+            db = await self._get_db()
+            
+            result = await db.execute(
+                "SELECT * FROM user WHERE clerk_user_id = $clerk_user_id",
+                {"clerk_user_id": clerk_user_id}
+            )
+            
+            if not result or len(result) == 0:
+                return None
+            
+            user_data = result[0]
+            user_data['id'] = str(user_data['id'])
+            return UserResponse(**user_data)
+            
+        except Exception as e:
+            raise DatabaseException(f"Failed to get user by Clerk ID: {str(e)}")
+    
+    async def update_clerk_id(self, user_id: str, clerk_user_id: str) -> bool:
+        """Update user's Clerk ID."""
+        try:
+            db = await self._get_db()
+            
+            result = await db.execute(
+                f"UPDATE {user_id} SET clerk_user_id = $clerk_user_id",
+                {"clerk_user_id": clerk_user_id}
+            )
+            
+            return bool(result)
+            
+        except Exception as e:
+            raise DatabaseException(f"Failed to update Clerk ID: {str(e)}")
     
     async def get_user_with_password(self, email: str) -> Optional[UserInDB]:
         """Get user with password hash for authentication."""

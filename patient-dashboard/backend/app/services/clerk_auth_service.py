@@ -3,6 +3,7 @@ Clerk authentication service for verifying Clerk JWTs.
 """
 import httpx
 import jwt
+import logfire
 from typing import Optional, Dict, Any
 from fastapi import HTTPException, status
 from app.config.settings import get_settings
@@ -13,7 +14,7 @@ class ClerkAuthService:
     """Service for handling Clerk authentication."""
     
     def __init__(self):
-        self.clerk_publishable_key = "pk_test_dGFsZW50ZWQta2lkLTc2LmNsZXJrLmFjY291bnRzLmRldiQ"
+        self.clerk_publishable_key = settings.CLERK_PUBLISHABLE_KEY or ""
         self.clerk_secret_key = settings.CLERK_SECRET_KEY
         # Extract issuer from publishable key
         self.clerk_issuer = self._extract_issuer_from_key()
@@ -36,10 +37,10 @@ class ClerkAuthService:
             # Remove any trailing $ or other special characters
             decoded = decoded.rstrip('$')
             # The decoded string is the Clerk instance domain
-            print(f"[DEBUG] Extracted Clerk issuer: {decoded}")
+            logfire.info("Extracted Clerk issuer", issuer=decoded)
             return decoded
         except Exception as e:
-            print(f"[DEBUG] Failed to extract issuer: {e}")
+            logfire.error("Failed to extract issuer", error=str(e))
             # Fallback to the correct domain for talented-kid-76
             return "talented-kid-76.clerk.accounts.dev"
     
@@ -53,8 +54,7 @@ class ClerkAuthService:
     async def verify_clerk_token(self, token: str) -> Dict[str, Any]:
         """Verify a Clerk JWT token."""
         try:
-            print(f"[DEBUG] Verifying token starting with: {token[:20]}...")
-            print(f"[DEBUG] Using issuer: {self.clerk_issuer}")
+            logfire.debug("Verifying token", token_prefix=token[:20], issuer=self.clerk_issuer)
             # First decode without verification to get the kid
             unverified = jwt.decode(token, options={"verify_signature": False})
             
@@ -130,10 +130,16 @@ class ClerkAuthService:
         # If no user exists, use the actual email for Dion
         email = "dion@devq.ai" if clerk_user_id == "user_30hXLYnNT2hbyzSLWX9jDNazD04" else f"{clerk_user_id}@clerk.user"
         
+        # Generate secure random password for Clerk-authenticated users
+        import secrets
+        import string
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+        temp_password = ''.join(secrets.choice(alphabet) for _ in range(32))
+        
         # Create new user
         user_data = UserCreate(
             email=email,
-            password="ClerkAuth123!",  # Placeholder password that meets requirements
+            password=temp_password,  # Secure random password (not used for Clerk auth)
             first_name=clerk_payload.get('first_name', '') or 'Dion',
             last_name=clerk_payload.get('last_name', '') or 'Edge',
             role="ADMIN",  # Admin role for dion@devq.ai

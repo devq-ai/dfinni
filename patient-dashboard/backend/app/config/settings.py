@@ -34,20 +34,21 @@ class Settings(BaseSettings):
     WORKERS: int = Field(default=1, env="WORKERS")
 
     # Security Settings
-    SECRET_KEY: str = Field(default="dev-secret-key", env="PFINNI_SECRET_KEY")
-    JWT_SECRET_KEY: str = Field(default="dev-jwt-secret", env="PFINNI_JWT_SECRET_KEY")
-    ENCRYPTION_KEY: str = Field(default="dev-encryption-key-32-characters", env="PFINNI_ENCRYPTION_KEY")
+    SECRET_KEY: str = Field(env="PFINNI_SECRET_KEY")
+    JWT_SECRET_KEY: str = Field(env="PFINNI_JWT_SECRET_KEY")
+    ENCRYPTION_KEY: str = Field(env="PFINNI_ENCRYPTION_KEY")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(default=30, env="ACCESS_TOKEN_EXPIRE_MINUTES")
     REFRESH_TOKEN_EXPIRE_DAYS: int = Field(default=7, env="REFRESH_TOKEN_EXPIRE_DAYS")
 
     # Database Settings
-    DATABASE_URL: str = Field(default="ws://localhost:8000/rpc", env="PFINNI_SURREALDB_URL")
-    DATABASE_USER: str = Field(default="root", env="PFINNI_SURREALDB_USERNAME")
-    DATABASE_PASS: str = Field(default="root", env="PFINNI_SURREALDB_PASSWORD")
-    DATABASE_NAME: str = Field(default="patient_dashboard", env="PFINNI_SURREALDB_DATABASE")
-    DATABASE_NAMESPACE: str = Field(default="patient_dashboard", env="PFINNI_SURREALDB_NAMESPACE")
+    DATABASE_URL: str = Field(env="PFINNI_SURREALDB_URL")
+    DATABASE_USER: str = Field(env="PFINNI_SURREALDB_USERNAME")
+    DATABASE_PASS: str = Field(env="PFINNI_SURREALDB_PASSWORD")
+    DATABASE_NAME: str = Field(env="PFINNI_SURREALDB_DATABASE")
+    DATABASE_NAMESPACE: str = Field(env="PFINNI_SURREALDB_NAMESPACE")
 
     # SurrealDB Cache Settings
+    CACHE_ENABLED: bool = Field(default=True, env="PFINNI_CACHE_ENABLED")
     CACHE_DATABASE_URL: str = Field(default="ws://localhost:8080/rpc", env="PFINNI_CACHE_DATABASE_URL")
     CACHE_DATABASE_NAME: str = Field(default="patient_dashboard_cache", env="PFINNI_CACHE_DATABASE_NAME")
     CACHE_NAMESPACE: str = Field(default="cache", env="PFINNI_CACHE_NAMESPACE")
@@ -78,7 +79,7 @@ class Settings(BaseSettings):
     )
 
     # BetterAuth Configuration
-    BETTER_AUTH_SECRET: str = Field(default="dev-auth-secret", env="PFINNI_BETTER_AUTH_SECRET")
+    BETTER_AUTH_SECRET: str = Field(env="PFINNI_BETTER_AUTH_SECRET")
     BETTER_AUTH_URL: str = Field(default="http://localhost:8000", env="PFINNI_BETTER_AUTH_URL")
     BETTER_AUTH_DATABASE_URL: Optional[str] = Field(default=None, env="PFINNI_BETTER_AUTH_DATABASE_URL")
     BETTER_AUTH_COOKIE_DOMAIN: str = Field(default="localhost", env="PFINNI_BETTER_AUTH_COOKIE_DOMAIN")
@@ -87,9 +88,12 @@ class Settings(BaseSettings):
 
     # External Services
     LOGFIRE_TOKEN: Optional[str] = Field(default=None, env="PFINNI_LOGFIRE_TOKEN")
+    LOGFIRE_SERVICE_NAME: str = Field(default="pfinni-patient-dashboard", env="PFINNI_LOGFIRE_SERVICE_NAME")
+    LOGFIRE_PROJECT_NAME: str = Field(default="pfinni", env="PFINNI_LOGFIRE_PROJECT_NAME")
     RESEND_API_KEY: Optional[str] = Field(default=None, env="PFINNI_RESEND_API_KEY")
     ANTHROPIC_API_KEY: Optional[str] = Field(default=None, env="SHARED_ANTHROPIC_API_KEY")
     CLERK_SECRET_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_SECRET_KEY")
+    CLERK_PUBLISHABLE_KEY: Optional[str] = Field(default=None, env="PFINNI_CLERK_PUBLISHABLE_KEY")
 
     # Insurance Integration
     INSURANCE_CLIENT_ID: Optional[str] = Field(default=None, env="PFINNI_INSURANCE_CLIENT_ID")
