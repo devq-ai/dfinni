@@ -47,7 +47,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .open-next/assets --project-name=devq-ai --config=wrangler.pages.toml
+          command: pages deploy .open-next/assets --project-name=devq-ai
           workingDirectory: patient-dashboard/frontend
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
