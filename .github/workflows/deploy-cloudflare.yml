@@ -141,7 +141,7 @@ jobs:
           EOF
           
       - name: Upload Worker Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: cloudflare-worker
           path: cloudflare-worker/
@@ -152,7 +152,7 @@ jobs:
     needs: create-backend-worker
     steps:
       - name: Download Worker Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: cloudflare-worker
           path: cloudflare-worker/
