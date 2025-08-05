@@ -10,6 +10,22 @@ bucket = ".open-next/assets"
 binding = "NEXT_CACHE_R2"
 bucket_name = "devq-ai-cache"
 
+[[durable_objects.bindings]]
+name = "QUEUE_HANDLER"
+class_name = "DOQueueHandler"
+
+[[durable_objects.bindings]]
+name = "SHARDED_TAG_CACHE"
+class_name = "DOShardedTagCache"
+
+[[durable_objects.bindings]]
+name = "BUCKET_CACHE_PURGE"
+class_name = "BucketCachePurge"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"]
+
 [[routes]]
 pattern = "devq.ai/*"
 zone_name = "devq.ai"
