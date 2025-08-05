@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}>
       <html lang="en" className="dark">
         <body className={`${inter.variable} ${spaceMono.variable}`}>
           <header className="flex justify-end items-center p-4 gap-4 h-16 bg-cyber-carbon-black border-b border-cyber-gray">
