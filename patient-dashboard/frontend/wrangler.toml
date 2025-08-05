@@ -1,4 +1,4 @@
-name = "devq-ai"
+name = "devq-ai-app"
 main = ".open-next/worker.js"
 compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat"]
