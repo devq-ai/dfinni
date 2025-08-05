@@ -10,9 +10,45 @@ on:
 
 env:
   NODE_VERSION: '20'
-  PYTHON_VERSION: '3.12'
 
 jobs:
+  deploy-frontend:
+    name: Deploy Frontend to Cloudflare Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: patient-dashboard/frontend/package-lock.json
+      
+      - name: Install dependencies
+        working-directory: patient-dashboard/frontend
+        run: npm ci
+      
+      - name: Build application
+        working-directory: patient-dashboard/frontend
+        run: |
+          npm run build
+          npx @opennextjs/cloudflare build
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_API_URL: https://api.devq.ai
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /sign-up
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
+      
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy .open-next/assets --project-name=pfinni-dashboard
+          workingDirectory: patient-dashboard/frontend
+
   deploy-backend-worker:
     name: Deploy Backend Worker to Cloudflare
     runs-on: ubuntu-latest
@@ -114,17 +150,3 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: cloudflare-worker
           command: deploy --env production
-
-  deploy-frontend-notice:
-    name: Frontend Deployment Notice
-    runs-on: ubuntu-latest
-    steps:
-      - name: Notice
-        run: |
-          echo "ℹ️  Frontend deployment requires server-side rendering due to Clerk authentication."
-          echo "ℹ️  Please deploy the frontend to a platform that supports Next.js server-side rendering:"
-          echo "    - Vercel (recommended)"
-          echo "    - Netlify with Next.js adapter"
-          echo "    - Cloudflare Pages with Next.js adapter (experimental)"
-          echo ""
-          echo "📌 The backend API worker has been deployed to: https://api.devq.ai"
