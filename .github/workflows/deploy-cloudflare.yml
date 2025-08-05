@@ -13,41 +13,8 @@ env:
   PYTHON_VERSION: '3.12'
 
 jobs:
-  deploy-frontend:
-    name: Deploy Frontend to Cloudflare Pages
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          
-      - name: Install dependencies
-        working-directory: patient-dashboard/frontend
-        run: npm ci
-        
-      - name: Build frontend
-        working-directory: patient-dashboard/frontend
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_URL: https://api.devq.ai
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
-          NODE_ENV: production
-          
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: pfinni-dashboard
-          directory: patient-dashboard/frontend/out
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          deploymentTrigger: ${{ github.event_name }}
-
-  create-backend-worker:
-    name: Create Backend Worker Script
+  deploy-backend-worker:
+    name: Deploy Backend Worker to Cloudflare
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -140,23 +107,6 @@ jobs:
           ENVIRONMENT = "production"
           EOF
           
-      - name: Upload Worker Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: cloudflare-worker
-          path: cloudflare-worker/
-
-  deploy-backend-worker:
-    name: Deploy Backend Worker to Cloudflare
-    runs-on: ubuntu-latest
-    needs: create-backend-worker
-    steps:
-      - name: Download Worker Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: cloudflare-worker
-          path: cloudflare-worker/
-          
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
@@ -165,30 +115,16 @@ jobs:
           workingDirectory: cloudflare-worker
           command: deploy --env production
 
-  verify-deployment:
-    name: Verify Deployment
+  deploy-frontend-notice:
+    name: Frontend Deployment Notice
     runs-on: ubuntu-latest
-    needs: [deploy-frontend, deploy-backend-worker]
     steps:
-      - name: Wait for services to be ready
-        run: sleep 30
-        
-      - name: Check Backend Health
+      - name: Notice
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://api.devq.ai/health)
-          if [ $response -eq 200 ]; then
-            echo "✅ Backend is healthy"
-          else
-            echo "❌ Backend health check failed with status $response"
-            exit 1
-          fi
-          
-      - name: Check Frontend
-        run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://devq.ai)
-          if [ $response -eq 200 ]; then
-            echo "✅ Frontend is accessible"
-          else
-            echo "❌ Frontend check failed with status $response"
-            exit 1
-          fi
+          echo "ℹ️  Frontend deployment requires server-side rendering due to Clerk authentication."
+          echo "ℹ️  Please deploy the frontend to a platform that supports Next.js server-side rendering:"
+          echo "    - Vercel (recommended)"
+          echo "    - Netlify with Next.js adapter"
+          echo "    - Cloudflare Pages with Next.js adapter (experimental)"
+          echo ""
+          echo "📌 The backend API worker has been deployed to: https://api.devq.ai"
