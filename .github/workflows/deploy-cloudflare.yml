@@ -13,7 +13,7 @@ env:
 
 jobs:
   deploy-frontend:
-    name: Deploy Frontend to Cloudflare Pages
+    name: Deploy Frontend to Cloudflare Workers
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -51,12 +51,12 @@ jobs:
           command: pages project create devq-ai --production-branch=main
           workingDirectory: patient-dashboard/frontend
       
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .open-next/assets --project-name=devq-ai
+          command: deploy
           workingDirectory: patient-dashboard/frontend
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}

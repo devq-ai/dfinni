@@ -1,7 +1,14 @@
 name = "devq-ai"
-pages_build_output_dir = ".open-next/assets"
+main = ".open-next/worker.js"
 compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = ".open-next/assets"
+
+[[routes]]
+pattern = "devq.ai/*"
+zone_name = "devq.ai"
 
 [vars]
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
