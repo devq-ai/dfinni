@@ -139,36 +139,41 @@ export default function DashboardPage() {
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const trend = stat.trend
-          const CardWrapper = stat.link ? Link : 'div'
-          const cardProps = stat.link ? { href: stat.link } : {}
+          const cardContent = (
+            <Card className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200 cursor-pointer h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.name}
+                </CardTitle>
+                {getStatIcon(stat.name)}
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loading ? '...' : stat.value}
+                </div>
+                <p className="text-xs text-muted-foreground flex items-center mt-1">
+                  {trend.isUp ? (
+                    <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
+                  ) : (
+                    <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
+                  )}
+                  <span className={trend.isUp ? 'text-green-600' : 'text-red-600'}>
+                    {trend.value}
+                  </span>
+                  <span className="ml-1">from last month</span>
+                </p>
+              </CardContent>
+            </Card>
+          )
           
-          return (
-            <CardWrapper key={stat.name} {...cardProps} className="block">
-              <Card className="bg-card border-2 border-border dark:bg-[#141414] dark:border-[#3e3e3e] hover:border-cyber-electric-cyan/30 transition-all duration-200 cursor-pointer h-full">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {stat.name}
-                  </CardTitle>
-                  {getStatIcon(stat.name)}
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {loading ? '...' : stat.value}
-                  </div>
-                  <p className="text-xs text-muted-foreground flex items-center mt-1">
-                    {trend.isUp ? (
-                      <ArrowUpRight className="h-4 w-4 text-green-500 mr-1" />
-                    ) : (
-                      <ArrowDownRight className="h-4 w-4 text-red-500 mr-1" />
-                    )}
-                    <span className={trend.isUp ? 'text-green-600' : 'text-red-600'}>
-                      {trend.value}
-                    </span>
-                    <span className="ml-1">from last month</span>
-                  </p>
-                </CardContent>
-              </Card>
-            </CardWrapper>
+          return stat.link ? (
+            <Link key={stat.name} href={stat.link} className="block">
+              {cardContent}
+            </Link>
+          ) : (
+            <div key={stat.name} className="block">
+              {cardContent}
+            </div>
           )
         })}
       </div>

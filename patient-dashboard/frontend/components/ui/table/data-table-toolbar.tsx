@@ -5,7 +5,6 @@ import * as React from 'react';
 
 import { DataTableDateFilter } from '@/components/ui/table/data-table-date-filter';
 import { DataTableFacetedFilter } from '@/components/ui/table/data-table-faceted-filter';
-import { DataTableSliderFilter } from '@/components/ui/table/data-table-slider-filter';
 import { DataTableViewOptions } from '@/components/ui/table/data-table-view-options';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -75,7 +74,7 @@ function DataTableToolbarFilter<TData>({
   column
 }: DataTableToolbarFilterProps<TData>) {
   {
-    const columnMeta = column.columnDef.meta;
+    const columnMeta = column.columnDef.meta as any;
 
     const onFilterRender = React.useCallback(() => {
       if (!columnMeta?.variant) return null;
@@ -110,13 +109,6 @@ function DataTableToolbarFilter<TData>({
             </div>
           );
 
-        case 'range':
-          return (
-            <DataTableSliderFilter
-              column={column}
-              title={columnMeta.label ?? column.id}
-            />
-          );
 
         case 'date':
         case 'dateRange':

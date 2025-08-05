@@ -15,7 +15,7 @@ export default function TestAuthPage() {
     setLoading(true);
     try {
       const token = await getToken();
-      setTestResults(prev => ({ ...prev, clerkToken: token ? 'Retrieved' : 'No token' }));
+      setTestResults((prev: any) => ({ ...prev, clerkToken: token ? 'Retrieved' : 'No token' }));
       
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       
@@ -26,7 +26,7 @@ export default function TestAuthPage() {
         }
       });
       const debugData = await debugResponse.json();
-      setTestResults(prev => ({ ...prev, debugEndpoint: debugData }));
+      setTestResults((prev: any) => ({ ...prev, debugEndpoint: debugData }));
       
       // Test authenticated endpoint
       const authResponse = await fetch(`${apiUrl}/api/v1/debug/auth-user`, {
@@ -35,7 +35,7 @@ export default function TestAuthPage() {
         }
       });
       const authData = await authResponse.json();
-      setTestResults(prev => ({ ...prev, authEndpoint: authData }));
+      setTestResults((prev: any) => ({ ...prev, authEndpoint: authData }));
       
       // Test patients endpoint
       const patientsResponse = await fetch(`${apiUrl}/api/v1/patients/`, {
@@ -44,10 +44,10 @@ export default function TestAuthPage() {
         }
       });
       const patientsData = await patientsResponse.json();
-      setTestResults(prev => ({ ...prev, patientsEndpoint: patientsData }));
+      setTestResults((prev: any) => ({ ...prev, patientsEndpoint: patientsData }));
       
     } catch (error) {
-      setTestResults(prev => ({ ...prev, error: error.message }));
+      setTestResults((prev: any) => ({ ...prev, error: (error as Error).message }));
     }
     setLoading(false);
   };

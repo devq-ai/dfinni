@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Patient } from '@/types/patient'
 import { patientsApi } from '@/lib/api/patients'
+import { useAuthHeaders } from '@/lib/auth-client'
 import Link from 'next/link'
 
 export default function PatientDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const getAuthHeaders = useAuthHeaders()
   const [patient, setPatient] = useState<Patient | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -23,7 +25,7 @@ export default function PatientDetailPage() {
     try {
       setLoading(true)
       setError(null)
-      const data = await patientsApi.getPatient(id)
+      const data = await patientsApi.getPatient(getAuthHeaders, id)
       setPatient(data)
     } catch (err) {
       setError('Failed to load patient details')

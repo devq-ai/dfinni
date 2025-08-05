@@ -68,7 +68,7 @@ export function DataTableViewOptions<TData>({
                   }
                 >
                   <span className='truncate'>
-                    {column.columnDef.meta?.label ?? column.id}
+                    {(column.columnDef.meta as any)?.label ?? column.id}
                   </span>
                   <CheckIcon
                     className={cn(

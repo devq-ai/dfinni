@@ -42,7 +42,7 @@ const patientSchema = z.object({
   phone: z.string().optional(),
   address: z.string().optional(),
   medical_record_number: z.string().optional(),
-  risk_level: z.enum(['Low', 'Medium', 'High']).default('Low'),
+  risk_level: z.enum(['Low', 'Medium', 'High'] as const),
 })
 
 type PatientFormData = z.infer<typeof patientSchema>

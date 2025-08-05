@@ -24,6 +24,14 @@ export interface AlertListResponse {
   total: number
   page: number
   pageSize: number
+  data?: {
+    alerts: Alert[]
+    stats?: {
+      total: number
+      byType?: Record<string, number>
+      bySeverity?: Record<string, number>
+    }
+  }
 }
 
 export interface CreateAlertDto {

@@ -58,7 +58,7 @@ export default function ProfilePage() {
               </div>
               <div className="flex items-center text-muted-foreground">
                 <Shield className="h-4 w-4 mr-2" />
-                {user.publicMetadata.role || 'Healthcare Provider'}
+                {(user.publicMetadata as any)?.role || 'Healthcare Provider'}
               </div>
             </div>
           </CardContent>

@@ -30,7 +30,7 @@ export default function TestAuthPage() {
       const data = await response.json()
       setTestResult(data)
     } catch (error) {
-      setTestResult({ error: error.message })
+      setTestResult({ error: (error as Error).message })
     }
     setLoading(false)
   }
