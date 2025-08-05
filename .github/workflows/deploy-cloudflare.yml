@@ -42,12 +42,21 @@ jobs:
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
           NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
       
+      - name: Create Pages Project
+        uses: cloudflare/wrangler-action@v3
+        continue-on-error: true
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create devq-ai --production-branch=main
+          workingDirectory: patient-dashboard/frontend
+      
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy .open-next/assets --project-name=devq-ai --create=true
+          command: pages deploy .open-next/assets --project-name=devq-ai
           workingDirectory: patient-dashboard/frontend
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
