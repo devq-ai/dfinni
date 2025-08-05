@@ -8,7 +8,7 @@ bucket = ".open-next/assets"
 
 [[kv_namespaces]]
 binding = "NEXT_CACHE_WORKERS_KV"
-id = "to-be-created"
+id = "3e3333eba2c34b5193271f6f51dd811f"
 
 [[durable_objects.bindings]]
 name = "QUEUE_HANDLER"
