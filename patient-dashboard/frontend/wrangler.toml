@@ -24,7 +24,7 @@ class_name = "BucketCachePurge"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"]
+new_sqlite_classes = ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"]
 
 [[routes]]
 pattern = "devq.ai/*"
