@@ -42,13 +42,13 @@ jobs:
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /dashboard
           NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /dashboard
       
-      - name: Create R2 Bucket
+      - name: Create KV Namespace
         uses: cloudflare/wrangler-action@v3
         continue-on-error: true
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: r2 bucket create devq-ai-cache
+          command: kv namespace create "NEXT_CACHE_WORKERS_KV"
           workingDirectory: patient-dashboard/frontend
       
       - name: Create Pages Project

@@ -6,9 +6,9 @@ compatibility_flags = ["nodejs_compat"]
 [site]
 bucket = ".open-next/assets"
 
-[[r2_buckets]]
-binding = "NEXT_CACHE_R2"
-bucket_name = "devq-ai-cache"
+[[kv_namespaces]]
+binding = "NEXT_CACHE_WORKERS_KV"
+id = "to-be-created"
 
 [[durable_objects.bindings]]
 name = "QUEUE_HANDLER"
