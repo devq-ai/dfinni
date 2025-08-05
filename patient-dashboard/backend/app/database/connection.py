@@ -20,7 +20,7 @@ class DatabaseConnection:
     
     def __init__(self):
         self.db: Optional[AsyncSurreal] = None
-        self.url = settings.DATABASE_URL
+        self.url = settings.database_url_for_environment
         self.username = settings.DATABASE_USER
         self.password = settings.DATABASE_PASS
         self.namespace = settings.DATABASE_NAMESPACE
@@ -28,8 +28,14 @@ class DatabaseConnection:
         self._connected = False
         self._lock = asyncio.Lock()
         
+        # Override password for production
+        if settings.is_production:
+            prod_pass = os.getenv("PFINNI_SURREAL_DB_PASSWORD")
+            if prod_pass:
+                self.password = prod_pass
+        
         # Debug output
-        logger.info(f"Database config - URL: {self.url}, User: {self.username}, Namespace: {self.namespace}, Database: {self.database}")
+        logger.info(f"Database config - URL: {self.url}, User: {self.username}, Namespace: {self.namespace}, Database: {self.database}, Environment: {settings.ENVIRONMENT}")
         
     @retry(
         stop=stop_after_attempt(3),

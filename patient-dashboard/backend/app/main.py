@@ -277,10 +277,30 @@ async def general_exception_handler(request: Request, exc: Exception):
 @app.get("/health", tags=["Health"])
 async def health_check():
     """Basic health check endpoint."""
+    from datetime import datetime
+    
+    health_status = {
+        "status": "healthy",
+        "timestamp": datetime.utcnow().isoformat(),
+        "environment": settings.ENVIRONMENT,
+        "services": {
+            "api": "healthy",
+            "database": "unknown"
+        }
+    }
+    
+    # Quick database check
     try:
-        return {"status": "healthy", "timestamp": time.time()}
+        from app.database.connection import get_database
+        db = await get_database()
+        await db.execute("SELECT 1")
+        health_status["services"]["database"] = "healthy"
     except Exception as e:
-        return {"status": "error", "error": str(e)}
+        health_status["status"] = "degraded"
+        health_status["services"]["database"] = "error"
+        logger.warning(f"Health check database error: {e}")
+    
+    return health_status
 
 
 @app.get("/health/detailed", tags=["Health"])

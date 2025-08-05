@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     DATABASE_PASS: str = Field(env="PFINNI_SURREALDB_PASSWORD")
     DATABASE_NAME: str = Field(env="PFINNI_SURREALDB_DATABASE")
     DATABASE_NAMESPACE: str = Field(env="PFINNI_SURREALDB_NAMESPACE")
+    
+    # Production Database URL (for Cloudflare Tunnel)
+    PRODUCTION_DATABASE_URL: str = Field(default="wss://db.devq.ai/rpc", env="PFINNI_PRODUCTION_DATABASE_URL")
 
     # SurrealDB Cache Settings
     CACHE_ENABLED: bool = Field(default=True, env="PFINNI_CACHE_ENABLED")
@@ -194,10 +197,17 @@ class Settings(BaseSettings):
         return self.ENVIRONMENT == "testing"
 
     @property
+    def database_url_for_environment(self) -> str:
+        """Get the appropriate database URL based on environment."""
+        if self.is_production:
+            return self.PRODUCTION_DATABASE_URL
+        return self.DATABASE_URL
+
+    @property
     def database_config(self) -> dict:
         """Get database configuration dictionary."""
         return {
-            "url": self.DATABASE_URL,
+            "url": self.database_url_for_environment,
             "user": self.DATABASE_USER,
             "password": self.DATABASE_PASS,
             "database": self.DATABASE_NAME,

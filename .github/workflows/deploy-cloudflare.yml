@@ -1,0 +1,194 @@
+name: Deploy to Cloudflare
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'patient-dashboard/**'
+      - '.github/workflows/deploy-cloudflare.yml'
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.12'
+
+jobs:
+  deploy-frontend:
+    name: Deploy Frontend to Cloudflare Pages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          
+      - name: Install dependencies
+        working-directory: patient-dashboard/frontend
+        run: npm ci
+        
+      - name: Build frontend
+        working-directory: patient-dashboard/frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api.devq.ai
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+          NODE_ENV: production
+          
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: pfinni-dashboard
+          directory: patient-dashboard/frontend/out
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          deploymentTrigger: ${{ github.event_name }}
+
+  create-backend-worker:
+    name: Create Backend Worker Script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Create Worker files
+        run: |
+          mkdir -p cloudflare-worker
+          
+          # Create the worker script
+          cat > cloudflare-worker/worker.js << 'EOF'
+          export default {
+            async fetch(request, env) {
+              // Get the original URL
+              const url = new URL(request.url);
+              
+              // CORS headers
+              const corsHeaders = {
+                'Access-Control-Allow-Origin': 'https://devq.ai',
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+                'Access-Control-Allow-Credentials': 'true',
+                'Access-Control-Max-Age': '86400',
+              };
+
+              // Handle CORS preflight
+              if (request.method === 'OPTIONS') {
+                return new Response(null, { 
+                  status: 204,
+                  headers: corsHeaders 
+                });
+              }
+
+              try {
+                // Route to your backend running on Mac Studio via Cloudflare Tunnel
+                // The tunnel makes your local backend available at db.devq.ai
+                const backendUrl = new URL(url.pathname + url.search, 'https://db.devq.ai:8001');
+                
+                // Forward the request
+                const backendResponse = await fetch(backendUrl, {
+                  method: request.method,
+                  headers: request.headers,
+                  body: request.body,
+                  // Important: Don't follow redirects automatically
+                  redirect: 'manual'
+                });
+
+                // Create response with CORS headers
+                const response = new Response(backendResponse.body, {
+                  status: backendResponse.status,
+                  statusText: backendResponse.statusText,
+                  headers: backendResponse.headers
+                });
+
+                // Add CORS headers
+                Object.entries(corsHeaders).forEach(([key, value]) => {
+                  response.headers.set(key, value);
+                });
+
+                return response;
+              } catch (error) {
+                console.error('Worker error:', error);
+                return new Response(JSON.stringify({ 
+                  error: 'Internal Server Error',
+                  message: error.message 
+                }), {
+                  status: 500,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    ...corsHeaders
+                  }
+                });
+              }
+            }
+          };
+          EOF
+          
+          # Create wrangler.toml
+          cat > cloudflare-worker/wrangler.toml << 'EOF'
+          name = "pfinni-api"
+          main = "worker.js"
+          compatibility_date = "2024-01-01"
+
+          [env.production]
+          name = "pfinni-api-production"
+          routes = [
+            { pattern = "api.devq.ai/*", zone_name = "devq.ai" }
+          ]
+
+          [env.production.vars]
+          ENVIRONMENT = "production"
+          EOF
+          
+      - name: Upload Worker Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: cloudflare-worker
+          path: cloudflare-worker/
+
+  deploy-backend-worker:
+    name: Deploy Backend Worker to Cloudflare
+    runs-on: ubuntu-latest
+    needs: create-backend-worker
+    steps:
+      - name: Download Worker Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: cloudflare-worker
+          path: cloudflare-worker/
+          
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare-worker
+          command: deploy --env production
+
+  verify-deployment:
+    name: Verify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-frontend, deploy-backend-worker]
+    steps:
+      - name: Wait for services to be ready
+        run: sleep 30
+        
+      - name: Check Backend Health
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://api.devq.ai/health)
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend is healthy"
+          else
+            echo "❌ Backend health check failed with status $response"
+            exit 1
+          fi
+          
+      - name: Check Frontend
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://devq.ai)
+          if [ $response -eq 200 ]; then
+            echo "✅ Frontend is accessible"
+          else
+            echo "❌ Frontend check failed with status $response"
+            exit 1
+          fi
