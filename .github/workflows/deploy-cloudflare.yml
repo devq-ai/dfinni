@@ -28,24 +28,13 @@ jobs:
         working-directory: patient-dashboard/frontend
         run: npm ci
       
-      - name: Debug environment
-        run: |
-          echo "Checking if CLERK key is set..."
-          if [ -z "${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" ]; then
-            echo "ERROR: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY secret is not set"
-          else
-            echo "CLERK key is set (first 20 chars): ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:0:20}..."
-          fi
-        env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
-      
       - name: Build application
         working-directory: patient-dashboard/frontend
         run: |
           npm run build
           npx @opennextjs/cloudflare build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ vars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
           NEXT_PUBLIC_API_URL: https://api.devq.ai
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: /sign-in
