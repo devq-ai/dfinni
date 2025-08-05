@@ -86,6 +86,8 @@ out/
 # Production
 build/
 dist/
+docs/
+archive/
 
 # Misc
 .DS_Store

@@ -51,12 +51,12 @@ A modern, HIPAA-compliant patient management system with AI-powered assistance f
 ### 1. Clone Repository
 ```bash
 git clone https://github.com/devqai/pfinni.git
-cd pfinni/patient-dashboard
+cd pfinni_dashboard
 ```
 
 ### 2. Backend Setup
 ```bash
-cd backend
+cd patient-dashboard/backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
@@ -64,7 +64,7 @@ pip install -r requirements.txt
 
 ### 3. Frontend Setup
 ```bash
-cd frontend
+cd patient-dashboard/frontend
 npm install
 ```
 
@@ -78,27 +78,31 @@ surreal start --bind 0.0.0.0:8080 --user root --pass password file://cache.db
 ```
 
 ### 5. Environment Configuration
-Create `.env` file in project root:
+Create `.env` file in project root (or use the one in /Users/dionedge/devqai/.env):
 ```env
 # Database Configuration
-SURREALDB_URL=ws://localhost:8000/rpc
-SURREALDB_NAMESPACE=healthcare
-SURREALDB_DATABASE=patient_dashboard
-SURREALDB_USERNAME=root
-SURREALDB_PASSWORD=password
+PFINNI_SURREALDB_URL=ws://localhost:8000/rpc
+PFINNI_SURREALDB_NAMESPACE=healthcare
+PFINNI_SURREALDB_DATABASE=patient_dashboard
+PFINNI_SURREALDB_USERNAME=root
+PFINNI_SURREALDB_PASSWORD=password
 
 # Security
-JWT_SECRET_KEY=your-secure-jwt-secret-key-here
-ENCRYPTION_KEY=your-32-character-encryption-key
+PFINNI_JWT_SECRET_KEY=your-secure-jwt-secret-key-here
+PFINNI_ENCRYPTION_KEY=your-32-character-encryption-key
+
+# Authentication (Clerk)
+PFINNI_CLERK_PUBLISHABLE_KEY=pk_test_your-key
+PFINNI_CLERK_SECRET_KEY=sk_test_your-key
 
 # AI Configuration
 ANTHROPIC_API_KEY=your-anthropic-api-key-here
 
 # Logging
-LOGFIRE_TOKEN=your-logfire-token-here
+PFINNI_LOGFIRE_TOKEN=your-logfire-token-here
 
 # Email (Optional)
-RESEND_API_KEY=your-resend-api-key-here
+PFINNI_RESEND_API_KEY=your-resend-api-key-here
 ```
 
 ## 🚀 Running the Application
@@ -117,9 +121,13 @@ surreal start --bind 0.0.0.0:8080 --user root --pass password file://cache.db
 #### 2. Start Backend API
 ```bash
 # Terminal 3: Backend
-cd backend
+cd patient-dashboard/backend
 source venv/bin/activate
+# Option 1: Direct uvicorn
 uvicorn app.main:app --reload --port 8001
+
+# Option 2: Using script
+./scripts/start_backend.sh
 ```
 
 #### 3. Start Frontend
@@ -144,25 +152,28 @@ Password: Admin123!
 ## 📊 Project Structure
 
 ```
-patient-dashboard/
-├── backend/                 # FastAPI Backend
-│   ├── app/
-│   │   ├── api/v1/         # API endpoints
-│   │   ├── core/           # Core configuration
-│   │   ├── models/         # Pydantic models
-│   │   ├── services/       # Business logic
-│   │   └── database/       # Database connection
-│   ├── requirements.txt    # Python dependencies
-│   └── scripts/           # Utility scripts
-├── frontend/              # Next.js Frontend
-│   ├── src/
-│   │   ├── app/           # App router pages
-│   │   ├── components/    # React components
-│   │   └── lib/           # Utilities
-│   ├── package.json       # Node.js dependencies
-│   └── tailwind.config.js # Styling configuration
-├── database/              # Database files
-└── docs/                  # Documentation
+pfinni_dashboard/
+├── patient-dashboard/          # Main application
+│   ├── backend/               # FastAPI Backend
+│   │   ├── app/              # Core application
+│   │   │   ├── api/v1/       # API endpoints
+│   │   │   ├── core/         # Core configuration
+│   │   │   ├── models/       # Pydantic models
+│   │   │   ├── services/     # Business logic
+│   │   │   └── database/     # Database connection
+│   │   ├── scripts/          # Utility scripts
+│   │   ├── archive/          # Archived/obsolete files
+│   │   ├── tests/            # Test suites
+│   │   └── requirements.txt  # Python dependencies
+│   ├── frontend/             # Next.js Frontend
+│   │   ├── app/              # App router pages
+│   │   ├── components/       # React components
+│   │   ├── lib/              # Utilities
+│   │   ├── e2e/              # E2E tests
+│   │   └── package.json      # Node.js dependencies
+├── docs/                     # Documentation
+├── archive/                  # Archived projects
+└── scripts/                  # Root level scripts
 ```
 
 ## 🧪 Testing
@@ -268,12 +279,196 @@ docker-compose up -d
 - [x] Test Coverage (80%+)
 
 ### 🚧 Post-MVP Roadmap
-See [MVP_TASKS.md](./MVP_TASKS.md) for detailed post-MVP features including:
-- Advanced patient portal
-- EHR integrations
-- Multi-tenant architecture
-- Mobile applications
-- Advanced analytics
+
+#### Phase 1: Enhanced Security & Compliance (Q1 2025)
+- [ ] **Multi-Factor Authentication (MFA)**
+  - SMS/Email verification
+  - Authenticator app support
+  - Biometric authentication for mobile
+- [ ] **Advanced HIPAA Features**
+  - Automated compliance reporting
+  - Data retention policies
+  - Patient consent management
+  - Break-glass access procedures
+- [ ] **Zero Trust Security Model**
+  - Network segmentation
+  - Continuous verification
+  - Least privilege access
+  - Encrypted data at rest and in transit
+
+#### Phase 2: Clinical Integration (Q2 2025)
+- [ ] **EHR/EMR Integration**
+  - HL7 FHIR support
+  - Epic MyChart integration
+  - Cerner PowerChart compatibility
+  - Allscripts connectivity
+- [ ] **Medical Device Integration**
+  - Vital signs monitors
+  - Glucose meters
+  - Blood pressure devices
+  - Wearable health trackers
+- [ ] **Lab System Integration**
+  - Direct lab result imports
+  - Order management
+  - Result trending
+  - Abnormal value alerts
+
+#### Phase 3: Advanced Features (Q3 2025)
+- [ ] **Patient Portal**
+  - Secure messaging with providers
+  - Appointment scheduling
+  - Prescription refill requests
+  - Educational resources
+  - Health record access
+- [ ] **Telemedicine Integration**
+  - Video consultation platform
+  - Screen sharing capabilities
+  - Digital prescription writing
+  - Session recording (with consent)
+- [ ] **AI-Powered Insights**
+  - Predictive analytics for patient outcomes
+  - Risk stratification models
+  - Treatment recommendation engine
+  - Automated clinical decision support
+
+#### Phase 4: Mobile & Accessibility (Q4 2025)
+- [ ] **Native Mobile Applications**
+  - iOS app (Swift/SwiftUI)
+  - Android app (Kotlin/Jetpack Compose)
+  - Offline data sync
+  - Push notifications
+- [ ] **Progressive Web App (PWA)**
+  - Installable web app
+  - Offline functionality
+  - Background sync
+  - Native app-like experience
+- [ ] **Accessibility Enhancements**
+  - WCAG 2.1 AAA compliance
+  - Screen reader optimization
+  - Voice navigation
+  - Multi-language support
+
+#### Phase 5: Enterprise Features (Q1 2026)
+- [ ] **Multi-Tenant Architecture**
+  - Hospital network support
+  - Department isolation
+  - Shared resource management
+  - Custom branding per tenant
+- [ ] **Advanced Analytics Dashboard**
+  - Population health metrics
+  - Quality measure tracking
+  - Financial analytics
+  - Operational efficiency KPIs
+- [ ] **Workflow Automation**
+  - Automated patient reminders
+  - Task assignment rules
+  - Escalation procedures
+  - Custom workflow builder
+
+#### Phase 6: Interoperability & Standards (Q2 2026)
+- [ ] **Healthcare Standards Compliance**
+  - DICOM image support
+  - ICD-10/CPT coding
+  - SNOMED CT terminology
+  - RxNorm medication database
+- [ ] **API Ecosystem**
+  - Public API for third-party developers
+  - Webhook support
+  - GraphQL endpoint
+  - API marketplace
+- [ ] **Blockchain Integration**
+  - Patient identity verification
+  - Audit trail immutability
+  - Consent management
+  - Data sharing agreements
+
+#### Phase 7: Advanced AI & ML (Q3 2026)
+- [ ] **Natural Language Processing**
+  - Clinical note summarization
+  - Voice-to-text documentation
+  - Automated coding suggestions
+  - Sentiment analysis
+- [ ] **Computer Vision**
+  - Medical image analysis
+  - Wound assessment
+  - Medication verification
+  - Patient identification
+- [ ] **Predictive Modeling**
+  - Readmission risk prediction
+  - Disease progression modeling
+  - Treatment response prediction
+  - Resource utilization forecasting
+
+#### Phase 8: Global Expansion (Q4 2026)
+- [ ] **International Compliance**
+  - GDPR (Europe)
+  - PIPEDA (Canada)
+  - DPA (UK)
+  - Regional healthcare standards
+- [ ] **Multi-Currency Support**
+  - Billing in local currencies
+  - Insurance claim processing
+  - International payment gateways
+- [ ] **Localization**
+  - 10+ language support
+  - Cultural customization
+  - Local healthcare workflows
+  - Regional drug databases
+
+See [MVP_TASKS.md](./MVP_TASKS.md) for detailed implementation plans.
+
+### 🔧 Technical Roadmap
+
+#### Infrastructure & DevOps
+- [ ] **Kubernetes Deployment**
+  - Helm charts creation
+  - Auto-scaling policies
+  - Service mesh (Istio)
+  - GitOps with ArgoCD
+- [ ] **Monitoring & Observability**
+  - Prometheus metrics
+  - Grafana dashboards
+  - Distributed tracing (Jaeger)
+  - Log aggregation (ELK stack)
+- [ ] **Disaster Recovery**
+  - Automated backups
+  - Point-in-time recovery
+  - Geo-redundancy
+  - Failover procedures
+
+#### Performance & Scalability
+- [ ] **Database Optimization**
+  - Read replicas
+  - Sharding strategy
+  - Query optimization
+  - Connection pooling
+- [ ] **Caching Strategy**
+  - Redis cluster
+  - CDN integration
+  - Edge caching
+  - API response caching
+- [ ] **Real-time Features**
+  - WebSocket scaling
+  - Event streaming (Kafka)
+  - Live notifications
+  - Collaborative editing
+
+#### Developer Experience
+- [ ] **Development Tools**
+  - VS Code extension
+  - CLI tools
+  - Local development containers
+  - Hot module replacement
+- [ ] **Testing Framework**
+  - Contract testing
+  - Load testing suite
+  - Chaos engineering
+  - Synthetic monitoring
+- [ ] **Documentation**
+  - Interactive API explorer
+  - Video tutorials
+  - Architecture decision records
+  - Contribution guidelines
 
 ## 🤝 Contributing
 

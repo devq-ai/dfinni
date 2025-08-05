@@ -20,18 +20,20 @@
 ### First Login
 
 1. **Access the System**
-   - Open your web browser and navigate to the PFINNI dashboard
+   - Open your web browser and navigate to http://localhost:3000
    - You'll see the login screen with the cyber-themed interface
+   - The system uses Clerk authentication for secure access
 
 2. **Login Credentials**
-   - Enter your assigned email address
-   - Enter your secure password
-   - Click "Sign In" to access the dashboard
+   - **Default Admin Account:**
+     - Email: admin@example.com
+     - Password: Admin123!
+   - Enter your credentials and click "Sign In"
 
-3. **Password Reset (If Required)**
-   - If prompted for a password reset, create a new secure password
-   - Requirements: 8+ characters, uppercase, lowercase, numbers, special characters
-   - Click "Reset Password" to complete the process
+3. **Authentication Security**
+   - Secure JWT token-based authentication
+   - Session management with automatic timeout
+   - All data transmission is encrypted
 
 ### Navigation Basics
 
@@ -53,23 +55,27 @@ The dashboard provides a real-time overview of your patient management system.
 
 **Total Patients**
 - Shows the total number of patients in your system
-- Green trend indicator shows growth from last month
+- Live count pulled from SurrealDB database
+- Trend indicator shows growth from previous period
 - Click to navigate to the full patient list
 
-**Active Patients**
-- Displays currently active patients receiving care
-- Helps track your active caseload
-- Excludes churned or inactive patients
-
-**New This Month**
-- Recent patient additions to your practice
-- Useful for tracking growth and marketing effectiveness
-- Shows monthly comparison trends
+**Active Alerts** 🆕
+- Displays count of unresolved system alerts
+- Real-time updates from the alerts system
+- Red badge indicates critical alerts requiring attention
+- Click to view detailed alerts page
 
 **High Risk Patients**
-- Patients flagged with high-risk indicators
+- Patients with risk level marked as "High"
+- Excludes churned patients (only shows active high-risk)
 - Requires immediate attention and monitoring
-- Red indicator emphasizes urgency
+- Click to view filtered patient list
+
+**Active Patients**
+- Count of patients with status = "active"
+- Helps track your active caseload
+- Updated in real-time from database
+- Shows trend comparison with previous period
 
 ### Patient Status Distribution
 
@@ -98,11 +104,13 @@ The patient list is your central hub for managing all patient records.
 #### Viewing Patients
 
 **Table Columns:**
-- **Name** - Patient's full name (clickable to view details)
-- **Status** - Current workflow status with color coding
-- **Risk Level** - Low, Medium, High risk assessment
-- **Last Contact** - Most recent interaction date
-- **Actions** - Quick action buttons for common tasks
+- **Name** - Patient's full name
+- **Date of Birth** - Patient's DOB with calculated age
+- **Status** - Current workflow status with color-coded badges
+- **Risk Level** - Visual badges showing Low (green), Medium (gray), or High (red)
+- **Contact** - Email and phone number
+- **Address** - Complete patient address
+- **Actions** - View, Edit, and Delete buttons
 
 #### Search and Filtering
 
@@ -333,41 +341,43 @@ Stay informed about important events and required actions.
 
 ### Types of Alerts
 
-**High Priority (Red):**
-- High-risk patient status changes
-- Critical system notifications
-- Urgent action items
-- Compliance deadlines
+The alerts page shows real-time notifications from the database with severity indicators:
 
-**Medium Priority (Yellow):**
-- Patient birthdays and anniversaries
-- Routine follow-up reminders
-- System updates available
-- Performance notifications
+**Critical Alerts (Red Badge):**
+- Critical vital signs exceeded
+- Emergency patient situations
+- System critical errors
+- Immediate action required
 
-**Low Priority (Blue):**
-- General system information
-- Feature announcements
-- Tips and best practices
-- Educational content
+**Warning Alerts (Yellow Badge):**
+- Medication schedules missed
+- Appointment reminders
+- Non-critical threshold violations
+- Follow-up required
+
+**Info Alerts (Blue Badge):**
+- Lab results available
+- System updates
+- General notifications
+- No immediate action needed
 
 ### Alert Actions
 
-**Mark as Read:**
-- Click the checkmark to mark alerts as read
-- Reduces clutter in your alert list
-- Maintains record for audit purposes
+**Acknowledge Alert:**
+- Click "Acknowledge" button on active alerts
+- Confirms you've seen the notification
+- Changes alert status but keeps it visible
 
 **Resolve Alert:**
-- Click "Resolve" for actionable alerts
-- Indicates completion of required action
-- Moves alert to resolved status
+- Click "Resolve" to mark as completed
+- Removes from active alerts view
+- Maintains in database for audit trail
 
-**Filter Alerts:**
-- Filter by priority level
-- Filter by alert type
-- Search alert content
-- Sort by date or priority
+**Alert Tabs:**
+- **All** - Complete list of all alerts
+- **Active** - Only unresolved alerts (default view)
+- **Acknowledged** - Alerts marked as seen
+- **Resolved** - Completed/closed alerts
 
 ### Alert Settings
 
@@ -413,17 +423,17 @@ Customize your experience and manage your account.
 
 ### Appearance Settings
 
-**Theme Options:**
-- Cyber Black (default)
-- High contrast mode
-- Font size adjustments
-- Color customization
+**Theme:**
+- Dark Cyber Theme (default)
+- Background: #0f0f0f to #141414
+- Accent colors: Matrix Green, Neon Pink, Electric Cyan
+- Card backgrounds: #141414 with #3e3e3e borders
 
-**Dashboard Layout:**
-- Widget arrangement
-- Default page settings
-- Quick action preferences
-- Menu organization
+**UI Features:**
+- Modal dialogs with grey backgrounds (not transparent)
+- Color-coded status badges throughout
+- Risk level indicators with consistent styling
+- Responsive design for all screen sizes
 
 ### Privacy and Security
 
@@ -445,24 +455,31 @@ Customize your experience and manage your account.
 
 Common issues and solutions for PFINNI users.
 
+### System Requirements
+
+**Browser Compatibility:**
+- Chrome (recommended) - Version 90+
+- Firefox - Version 88+
+- Safari - Version 14+
+- Edge - Version 90+
+
+**Network Requirements:**
+- Stable internet connection
+- Access to ports 3000 (frontend) and 8001 (backend)
+- WebSocket support for real-time updates
+
 ### Login Issues
 
-**Can't Remember Password:**
-1. Click "Forgot Password" on login screen
-2. Enter your email address
-3. Check email for reset instructions
-4. Follow link to create new password
+**Authentication Errors:**
+- Verify you're using the correct Clerk credentials
+- Check if cookies are enabled in your browser
+- Clear browser cache and try again
+- Ensure JavaScript is enabled
 
-**Account Locked:**
-- Wait 15 minutes and try again
-- Contact system administrator if persistent
-- Check for caps lock or typing errors
-
-**Two-Factor Authentication Problems:**
-- Ensure device time is synchronized
-- Try generating new code
-- Use backup codes if available
-- Contact support for reset
+**Session Timeout:**
+- Sessions expire after inactivity
+- Simply log in again to continue
+- Your work is auto-saved
 
 ### Patient Management Issues
 
@@ -557,9 +574,18 @@ Common issues and solutions for PFINNI users.
 
 *This guide is updated regularly. Check for the latest version in your system settings.*
 
-**Last Updated:** July 28, 2025  
-**Version:** 1.0  
+**Last Updated:** August 4, 2025  
+**Version:** 1.1  
 **Applies to:** PFINNI Dashboard MVP
+
+### Recent Updates
+- Added Active Alerts dashboard card
+- Risk Level column now displays in patient table
+- High-risk filter excludes churned patients
+- Modal backgrounds fixed (now grey, not transparent)
+- Real-time database integration for all metrics
+- Improved alert management system
+- Enhanced authentication with Clerk
 
 ---
 
