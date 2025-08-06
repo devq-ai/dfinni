@@ -1,3 +1,4 @@
+// Updated: 2025-08-05T22:30:00-06:00
 'use client';
 import { Button } from '@/components/ui/button';
 import {
@@ -50,7 +51,7 @@ export function UserNav() {
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem>
-            <SignOutButton redirectUrl='/auth/sign-in' />
+            <SignOutButton redirectUrl='/sign-in' />
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

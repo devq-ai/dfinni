@@ -4,12 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "./scripts/dev.sh",
     "build": "next build",
+    "build:prod": "./scripts/prod.sh",
     "build:worker": "npx @opennextjs/cloudflare build",
+    "build:worker:prod": "./scripts/prod.sh --cloudflare",
     "preview": "npm run build:worker && wrangler pages dev",
     "deploy": "npm run build:worker && npx @opennextjs/cloudflare deploy",
-    "deploy:staging": "npm run build:worker && wrangler pages deploy .open-next/assets --project-name=pfinni-staging",
+    "deploy:staging": "./scripts/deploy-staging.sh",
+    "deploy:production": "./scripts/deploy-production.sh",
+    "rollback:production": "./scripts/rollback-production.sh",
     "start": "next start",
+    "start:prod": "NODE_ENV=production next start",
     "lint": "next lint",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -25,7 +31,7 @@
     "test:visual:report": "playwright show-report playwright-visual-report",
     "analyze": "ANALYZE=true npm run build",
     "lighthouse": "lighthouse http://localhost:3000 --output html --output-path ./lighthouse-report.html",
-    "build:prod": "npm run build && npm run analyze"
+    "build:analyze": "npm run build && npm run analyze"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.28.1",
@@ -70,6 +76,7 @@
     "dotenv": "^17.2.1",
     "input-otp": "^1.4.2",
     "kbar": "^0.1.0-beta.48",
+    "lru-cache": "^10.4.3",
     "lucide-react": "^0.534.0",
     "next": "15.4.5",
     "next-themes": "^0.4.6",

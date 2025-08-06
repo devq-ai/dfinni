@@ -1,3 +1,4 @@
+// Updated: 2025-08-05T22:30:00-06:00
 import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {

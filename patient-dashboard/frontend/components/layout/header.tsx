@@ -1,9 +1,10 @@
+// Updated: 2025-08-05T22:30:00-06:00
 import React from 'react';
 import { SidebarTrigger } from '../ui/sidebar';
 import { Separator } from '../ui/separator';
 import { Breadcrumbs } from '../breadcrumbs';
 import SearchInput from '../search-input';
-import { UserNav } from './user-nav';
+import { UserButton } from '@clerk/nextjs';
 import CtaGithub from './cta-github';
 
 export default function Header() {
@@ -20,7 +21,13 @@ export default function Header() {
           <SearchInput />
         </div>
         <CtaGithub />
-        <UserNav />
+        <UserButton 
+          appearance={{
+            elements: {
+              avatarBox: "w-8 h-8",
+            }
+          }}
+        />
       </div>
     </header>
   );

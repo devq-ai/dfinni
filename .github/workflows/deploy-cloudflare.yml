@@ -2,6 +2,15 @@ name: Deploy to Cloudflare
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
   push:
     branches: [main]
     paths:

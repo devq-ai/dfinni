@@ -1,5 +1,14 @@
+// Updated: 2025-08-05T22:35:00-06:00
 /** @type {import('next').NextConfig} */
+
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
 const nextConfig = {
+  // Subdirectory deployment
+  basePath: '/pfinni',
+  assetPrefix: '/pfinni',
+  
   // Enable React strict mode for better development experience
   reactStrictMode: true,
   
@@ -151,6 +160,20 @@ const nextConfig = {
   // Environment variables to expose to the browser
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001',
+    ENVIRONMENT: isDevelopment ? 'development' : 'production',
+  },
+  
+  // Development-specific API proxy
+  async rewrites() {
+    if (isDevelopment) {
+      return [
+        {
+          source: '/api/backend/:path*',
+          destination: 'http://localhost:8001/:path*',
+        },
+      ];
+    }
+    return [];
   },
 };
 

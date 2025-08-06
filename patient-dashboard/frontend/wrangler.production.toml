@@ -1,0 +1,68 @@
+# Production Cloudflare Workers Configuration
+# Created: 2025-08-05T22:45:00-06:00
+
+name = "pfinni-dashboard-production"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-30"
+compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = ".open-next/assets"
+
+# KV Namespaces for caching
+[[kv_namespaces]]
+binding = "NEXT_CACHE_WORKERS_KV"
+id = "YOUR_PRODUCTION_KV_ID"
+
+# Durable Objects
+[[durable_objects.bindings]]
+name = "QUEUE_HANDLER"
+class_name = "DOQueueHandler"
+
+[[durable_objects.bindings]]
+name = "SHARDED_TAG_CACHE"
+class_name = "DOShardedTagCache"
+
+[[durable_objects.bindings]]
+name = "BUCKET_CACHE_PURGE"
+class_name = "BucketCachePurge"
+
+# Production Routes
+[[routes]]
+pattern = "devq.ai/*"
+zone_name = "devq.ai"
+
+[[routes]]
+pattern = "www.devq.ai/*"
+zone_name = "devq.ai"
+
+# Production Environment Variables
+[vars]
+ENVIRONMENT = "production"
+NEXT_PUBLIC_API_URL = "https://api.devq.ai"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_live_Y2xlcmsuZGV2cS5haSQ"
+NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = "/dashboard"
+
+# Logfire Production
+LOGFIRE_ENVIRONMENT = "production"
+LOGFIRE_PROJECT_NAME = "pfinni"
+
+# Production Limits
+[limits]
+cpu_ms = 50
+
+# Production placement
+[placement]
+mode = "smart"
+
+# Observability
+[observability]
+enabled = true
+
+# Tail Workers
+[tail_consumers]
+# Send logs to Logfire worker
+LOGFIRE_TAIL = "logfire-tail-worker"
