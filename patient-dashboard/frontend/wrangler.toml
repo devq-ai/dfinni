@@ -32,7 +32,7 @@ zone_name = "devq.ai"
 
 [vars]
 # These will be replaced with actual values from GitHub secrets during deployment
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk"
 NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
 NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/dashboard"
