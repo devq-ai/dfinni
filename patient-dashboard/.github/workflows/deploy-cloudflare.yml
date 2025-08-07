@@ -30,8 +30,8 @@ jobs:
         env:
           NODE_ENV: production
           NEXT_PUBLIC_API_URL: https://db.devq.ai
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk
-          NEXT_PUBLIC_CLERK_DOMAIN: lenient-stork-45.clerk.accounts.dev
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA
+          NEXT_PUBLIC_CLERK_DOMAIN: clean-stang-14-51.clerk.accounts.dev
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: /pfinni/sign-in
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: /pfinni/sign-up
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /pfinni/dashboard
@@ -46,8 +46,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # Force the correct Clerk key to override any GitHub secret
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk
-          NEXT_PUBLIC_CLERK_DOMAIN: lenient-stork-45.clerk.accounts.dev
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA
+          NEXT_PUBLIC_CLERK_DOMAIN: clean-stang-14-51.clerk.accounts.dev
         run: |
           echo "Deploying to Cloudflare Workers..."
           # Explicitly unset any conflicting variables
