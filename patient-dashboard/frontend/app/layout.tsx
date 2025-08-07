@@ -30,14 +30,16 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const basePath = isProduction ? '/pfinni' : '';
   
   return (
     <ClerkProvider 
       publishableKey={publishableKey}
-      signInUrl={process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL}
-      signUpUrl={process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL}
-      afterSignInUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL}
-      afterSignUpUrl={process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL}
+      signInUrl={`${basePath}/sign-in`}
+      signUpUrl={`${basePath}/sign-up`}
+      afterSignInUrl={`${basePath}/dashboard`}
+      afterSignUpUrl={`${basePath}/dashboard`}
     >
       <html lang="en" className="dark">
         <body className={`${inter.variable} ${spaceMono.variable}`}>

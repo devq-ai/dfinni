@@ -27,9 +27,10 @@ ENVIRONMENT = "production"
 NODE_ENV = "production"
 NEXT_PUBLIC_API_URL = "https://db.devq.ai"
 
-# Using Clerk's public demo instance
-# This is a working test key from Clerk's documentation
+# Using Clerk's test instance that doesn't require custom domain
+# This key works with the default Clerk domain
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk"
+NEXT_PUBLIC_CLERK_DOMAIN = "lenient-stork-45.clerk.accounts.dev"
 
 # Clerk URLs with basePath
 NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/pfinni/sign-in"
