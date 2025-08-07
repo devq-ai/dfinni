@@ -1,11 +1,8 @@
-// Updated: 2025-08-05T22:30:00-06:00
+'use client';
+
 import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
-  // Use test keys configuration for demo
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const basePath = isDevelopment ? '' : '/pfinni';
-  
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="w-full max-w-md">
@@ -21,7 +18,7 @@ export default function SignInPage() {
           path="/sign-in"
           routing="path"
           signUpUrl="/sign-up"
-          afterSignInUrl={`${basePath}/dashboard`}
+          afterSignInUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "mx-auto",
