@@ -54,8 +54,8 @@ jobs:
           unset CLERK_PUBLISHABLE_KEY || true
           # Deploy with forced environment
           npx wrangler deploy --compatibility-date=$(date +%Y-%m-%d) \
-            --var NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk \
-            --var NEXT_PUBLIC_CLERK_DOMAIN:lenient-stork-45.clerk.accounts.dev
+            --var NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA \
+            --var NEXT_PUBLIC_CLERK_DOMAIN:clean-stang-14-51.clerk.accounts.dev
           
       - name: Verify deployment
         run: |

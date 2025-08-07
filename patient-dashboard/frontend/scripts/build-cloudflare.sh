@@ -4,8 +4,8 @@
 echo "=== Building for Cloudflare with correct Clerk configuration ==="
 
 # Force the correct Clerk test keys
-export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk"
-export NEXT_PUBLIC_CLERK_DOMAIN="lenient-stork-45.clerk.accounts.dev"
+export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA"
+export NEXT_PUBLIC_CLERK_DOMAIN="clean-stang-14-51.clerk.accounts.dev"
 
 # Unset any conflicting variables
 unset CLERK_PUBLISHABLE_KEY
