@@ -18,7 +18,7 @@ id = "3e3333eba2c34b5193271f6f51dd811f"
 
 # Route configuration
 [[routes]]
-pattern = "devq.ai/pfinni/*"
+pattern = "devq.ai/pfinni*"
 zone_name = "devq.ai"
 
 # Environment Variables
