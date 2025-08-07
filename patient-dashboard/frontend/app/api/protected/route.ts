@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth-helpers';
+import { requireAuth } from '../../../lib/auth-helpers';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
