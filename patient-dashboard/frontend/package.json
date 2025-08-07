@@ -9,7 +9,7 @@
     "build:prod": "./scripts/prod.sh",
     "build:worker": "npx @opennextjs/cloudflare build",
     "build:worker:prod": "./scripts/prod.sh --cloudflare",
-    "build:cloudflare": "npx @opennextjs/cloudflare build",
+    "build:cloudflare": "./scripts/build-cloudflare.sh",
     "preview": "npm run build:worker && wrangler pages dev",
     "deploy": "npm run build:worker && npx @opennextjs/cloudflare deploy",
     "deploy:staging": "./scripts/deploy-staging.sh",
