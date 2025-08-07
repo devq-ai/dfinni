@@ -1,40 +1,50 @@
-name = "devq-ai-app"
+# PFINNI Dashboard - Cloudflare Workers Configuration
+# This is the ONLY wrangler.toml to use for deployment
+
+name = "pfinni-dashboard-demo"
 main = ".open-next/worker.js"
 compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat"]
 
-[site]
-bucket = ".open-next/assets"
+# Static assets configuration - MUST use [assets] not [site]
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
+# KV Namespace for Next.js cache
 [[kv_namespaces]]
 binding = "NEXT_CACHE_WORKERS_KV"
 id = "3e3333eba2c34b5193271f6f51dd811f"
 
-[[durable_objects.bindings]]
-name = "QUEUE_HANDLER"
-class_name = "DOQueueHandler"
-
-[[durable_objects.bindings]]
-name = "SHARDED_TAG_CACHE"
-class_name = "DOShardedTagCache"
-
-[[durable_objects.bindings]]
-name = "BUCKET_CACHE_PURGE"
-class_name = "BucketCachePurge"
-
-[[migrations]]
-tag = "v1"
-new_sqlite_classes = ["DOQueueHandler", "DOShardedTagCache", "BucketCachePurge"]
-
+# Route configuration
 [[routes]]
-pattern = "devq.ai/*"
+pattern = "devq.ai/pfinni/*"
 zone_name = "devq.ai"
 
+# Environment Variables
 [vars]
-# These will be replaced with actual values from GitHub secrets during deployment
+ENVIRONMENT = "production"
+NODE_ENV = "production"
+NEXT_PUBLIC_API_URL = "https://db.devq.ai"
+
+# Using Clerk's public demo instance
+# This is a working test key from Clerk's documentation
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk"
-NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
-NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/dashboard"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = "/dashboard"
-NEXT_PUBLIC_API_URL = "https://api.devq.ai"
+
+# Clerk URLs with basePath
+NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/pfinni/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/pfinni/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/pfinni/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = "/pfinni/dashboard"
+
+# Production placement
+[placement]
+mode = "smart"
+
+# Observability
+[observability]
+enabled = true
+
+# Note: Secret values must be added via CLI:
+# npx wrangler secret put CLERK_SECRET_KEY
+# npx wrangler secret put DATABASE_URL

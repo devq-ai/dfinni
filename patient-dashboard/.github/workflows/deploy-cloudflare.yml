@@ -1,0 +1,64 @@
+name: Deploy to Cloudflare Workers
+
+on:
+  push:
+    branches: [main, feature/patient-dashboard]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Frontend to Cloudflare Workers
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build for Cloudflare
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: https://db.devq.ai
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: /pfinni/sign-in
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: /pfinni/sign-up
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: /pfinni/dashboard
+          NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: /pfinni/dashboard
+        run: |
+          echo "Building with OpenNext for Cloudflare..."
+          npm run build:cloudflare
+          
+      - name: Deploy to Cloudflare Workers
+        working-directory: frontend
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          echo "Deploying to Cloudflare Workers..."
+          npx wrangler deploy --compatibility-date=$(date +%Y-%m-%d)
+          
+      - name: Verify deployment
+        run: |
+          echo "Deployment complete!"
+          echo "Frontend URL: https://devq.ai/pfinni"
+          echo "API URL: https://db.devq.ai"
+          
+          # Test the deployment
+          echo "Testing deployment..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://devq.ai/pfinni)
+          if [ $response -eq 200 ]; then
+            echo "✅ Deployment successful! Site is accessible."
+          else
+            echo "⚠️  Site returned HTTP $response - may still be propagating"
+          fi

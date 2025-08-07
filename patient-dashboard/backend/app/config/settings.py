@@ -59,7 +59,7 @@ class Settings(BaseSettings):
 
     # CORS Settings  
     CORS_ORIGINS: str = Field(
-        default="http://localhost:3000",
+        default="http://localhost:3000,https://devq.ai,https://db.devq.ai",
         env="PFINNI_CORS_ORIGINS",
     )
     CORS_CREDENTIALS: bool = Field(default=True, env="PFINNI_CORS_CREDENTIALS")

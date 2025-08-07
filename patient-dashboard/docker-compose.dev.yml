@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # Development Database - Isolated from production
+  surrealdb-dev:
+    image: surrealdb/surrealdb:latest
+    container_name: pfinni-surrealdb-dev
+    command: start --user root --pass root --bind 0.0.0.0:8000 file:/data/database.db
+    ports:
+      - "8000:8000"  # Dev SurrealDB port
+    volumes:
+      - ./data/dev-surrealdb:/data
+    environment:
+      - SURREAL_LOG=info
+    networks:
+      - pfinni-dev-network
+
+  # Development Backend
+  backend-dev:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pfinni-backend-dev
+    ports:
+      - "8001:8001"  # Dev backend port
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=ws://surrealdb-dev:8000/rpc
+      - DATABASE_NAME=patient_dashboard_dev
+      - DATABASE_NAMESPACE=patient_dashboard_dev
+      - DATABASE_USER=root
+      - DATABASE_PASS=root
+      - PFINNI_CORS_ORIGINS=http://localhost:3000
+      - PFINNI_CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      - PFINNI_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY}
+      - PFINNI_LOGFIRE_TOKEN=${PFINNI_LOGFIRE_TOKEN}
+    volumes:
+      - ./backend:/app
+      - ./backend/.env.development:/app/.env
+    depends_on:
+      - surrealdb-dev
+    networks:
+      - pfinni-dev-network
+
+  # Development Frontend
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: pfinni-frontend-dev
+    ports:
+      - "3000:3000"  # Dev frontend port
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend-dev
+    networks:
+      - pfinni-dev-network
+
+networks:
+  pfinni-dev-network:
+    driver: bridge
+    name: pfinni-dev-network

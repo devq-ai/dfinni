@@ -7,7 +7,15 @@ const isPublicRoute = createRouteMatcher([
   '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/api/webhooks(.*)'
+  '/api/webhooks(.*)',
+  '/api/test',
+  '/diagnostic',
+  '/clerk-debug',
+  '/simple-signin',
+  '/static-test',
+  '/test-basic-clerk',
+  '/clerk-debug-test',
+  '/clerk-test'
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
@@ -21,11 +29,16 @@ export default clerkMiddleware(async (auth, req) => {
     }
     
     // For all other routes, redirect to sign-in
-    return redirectToSignIn({ returnBackUrl: req.url });
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', req.url);
+    return NextResponse.redirect(signInUrl);
   }
   
   // Logged in users trying to access auth pages get redirected to dashboard
-  if (userId && (req.nextUrl.pathname.startsWith('/sign-in') || req.nextUrl.pathname.startsWith('/sign-up'))) {
+  if (userId && (
+    req.nextUrl.pathname.startsWith('/sign-in') || 
+    req.nextUrl.pathname.startsWith('/sign-up')
+  )) {
     return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 });

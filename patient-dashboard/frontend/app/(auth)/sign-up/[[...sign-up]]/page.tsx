@@ -5,6 +5,10 @@ export default function SignUpPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-[#0f0f0f]">
       <SignUp 
+        path="/sign-up"
+        routing="path"
+        signInUrl="/sign-in"
+        afterSignUpUrl="/dashboard"
         appearance={{
           elements: {
             rootBox: "mx-auto",
@@ -17,8 +21,6 @@ export default function SignUpPage() {
             footerActionLink: "text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
           }
         }}
-        afterSignUpUrl="/dashboard"
-        signInUrl="/sign-in"
       />
     </div>
   );

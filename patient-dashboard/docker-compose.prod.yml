@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Production Database - Completely separate from dev
+  surrealdb-prod:
+    image: surrealdb/surrealdb:latest
+    container_name: pfinni-surrealdb-prod
+    command: start --user ${SURREAL_USER} --pass ${SURREAL_PASS} --bind 0.0.0.0:8000 file:/data/database.db
+    ports:
+      - "8100:8000"  # Different port for prod SurrealDB
+    volumes:
+      - ./data/prod-surrealdb:/data
+    environment:
+      - SURREAL_LOG=warn
+    networks:
+      - pfinni-prod-network
+    restart: unless-stopped
+
+  # Production Backend
+  backend-prod:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pfinni-backend-prod
+    ports:
+      - "8101:8001"  # Different port for prod backend
+    environment:
+      - ENVIRONMENT=production
+      - DATABASE_URL=ws://surrealdb-prod:8000/rpc
+      - DATABASE_NAME=patient_dashboard_prod
+      - DATABASE_NAMESPACE=patient_dashboard_prod
+      - DATABASE_USER=${SURREAL_USER}
+      - DATABASE_PASS=${SURREAL_PASS}
+      - PFINNI_CORS_ORIGINS=${PRODUCTION_CORS_ORIGINS}
+      - PFINNI_CLERK_SECRET_KEY=${CLERK_SECRET_KEY_PROD}
+      - PFINNI_CLERK_PUBLISHABLE_KEY=${CLERK_PUBLISHABLE_KEY_PROD}
+      - PFINNI_LOGFIRE_TOKEN=${PFINNI_LOGFIRE_TOKEN_PROD}
+    depends_on:
+      - surrealdb-prod
+    networks:
+      - pfinni-prod-network
+    restart: unless-stopped
+
+  # Production Frontend (for local testing of prod build)
+  frontend-prod:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pfinni-frontend-prod
+    ports:
+      - "3100:3000"  # Different port for prod frontend
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8101
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY_PROD}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY_PROD}
+    depends_on:
+      - backend-prod
+    networks:
+      - pfinni-prod-network
+    restart: unless-stopped
+
+networks:
+  pfinni-prod-network:
+    driver: bridge
+    name: pfinni-prod-network

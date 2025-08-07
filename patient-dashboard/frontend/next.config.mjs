@@ -4,16 +4,25 @@
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Debug logging
+console.log('=== NEXT CONFIG LOADING ===');
+console.log('next.config.mjs - NODE_ENV:', process.env.NODE_ENV);
+console.log('next.config.mjs - isDevelopment:', isDevelopment);
+console.log('next.config.mjs - isProduction:', isProduction);
+console.log('next.config.mjs - All env vars:', Object.keys(process.env).filter(k => k.includes('NODE') || k.includes('NEXT')));
+console.log('==========================');
+
 const nextConfig = {
-  // Subdirectory deployment
-  basePath: '/pfinni',
-  assetPrefix: '/pfinni',
+  // Only use basePath in production for Cloudflare deployment
+  ...(isProduction && {
+    basePath: '/pfinni',
+    assetPrefix: '/pfinni',
+  }),
   
   // Enable React strict mode for better development experience
   reactStrictMode: true,
   
-  // Optimize production builds
-  swcMinify: true,
+  // Optimize production builds - removed swcMinify as it's deprecated in Next.js 15
   
   // Enable experimental features for performance
   experimental: {
