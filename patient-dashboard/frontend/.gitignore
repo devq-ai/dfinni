@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+sign-in.html
+*.html
 
 # debug
 npm-debug.log*
