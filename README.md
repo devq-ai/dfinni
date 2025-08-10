@@ -6,6 +6,14 @@ A modern, HIPAA-compliant patient management system with AI-powered assistance f
 ![Test Coverage](https://img.shields.io/badge/Coverage-80%25-brightgreen)
 ![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen)
 
+## 🎯 Live Demo
+
+**Try the live demo at: https://pfinni.devq.ai/dashboard**
+
+Demo credentials:
+- **Email**: demo@user.com
+- **Password**: Password123!
+
 ## 🚀 Features
 
 ### Core Patient Management
