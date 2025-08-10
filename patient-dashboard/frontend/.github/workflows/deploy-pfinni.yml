@@ -30,8 +30,8 @@ jobs:
         working-directory: patient-dashboard/frontend
         run: npx @opennextjs/cloudflare@latest build
         env:
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA
-          NEXT_PUBLIC_API_URL: https://api.devq.ai
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          NEXT_PUBLIC_API_URL: https://db.devq.ai
           
       - name: Deploy to Cloudflare Workers
         working-directory: patient-dashboard/frontend
