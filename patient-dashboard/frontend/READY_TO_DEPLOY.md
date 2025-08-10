@@ -56,5 +56,5 @@ https://devq.ai/pfinni/sign-in
 
 To use production Clerk with custom domain:
 1. Add CNAME: `clerk.devq.ai → frontend-api.clerk.services`
-2. Update publishable key to `pk_live_Y2xlcmsuZGV2cS5haSQ`
+2. Update publishable key to `<YOUR_CLERK_PUBLISHABLE_KEY>`
 3. Redeploy

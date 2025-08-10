@@ -1,3 +1,4 @@
+// Last Updated: 2025-08-09T20:12:00-06:00
 import { Provider, ProviderListResponse, CreateProviderDto, UpdateProviderDto } from '@/types/provider'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -35,8 +36,11 @@ async function getAuthHeaders(): Promise<HeadersInit> {
 export const providersApi = {
   async getProviders(page = 1, pageSize = 10): Promise<ProviderListResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/v1/providers?page=${page}&limit=${pageSize}`, {
-        // headers: await getAuthHeaders(),  // Temporarily disabled for development
+      // Temporarily use test endpoint to get actual database data
+      const response = await fetch(`${API_BASE_URL}/api/v1/test-providers`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
       })
       
       if (!response.ok) {

@@ -25,5 +25,5 @@ This uses the test environment at: clean-stang-14-51.clerk.accounts.dev
 
 ## Current Issue
 
-The publishable key `pk_live_Y2xlcmsuZGV2cS5haSQ` expects clerk.devq.ai to exist.
+The publishable key `<YOUR_CLERK_PUBLISHABLE_KEY>` expects clerk.devq.ai to exist.
 Without this DNS record, Clerk JavaScript cannot load, causing a blank page.

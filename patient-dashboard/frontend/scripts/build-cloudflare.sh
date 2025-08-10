@@ -1,18 +1,26 @@
+# Last Updated: 2025-08-09T20:12:00-06:00
 #!/bin/bash
-# Build script for Cloudflare deployment with forced Clerk configuration
+# Build script for Cloudflare deployment
 
-echo "=== Building for Cloudflare with correct Clerk configuration ==="
+echo "=== Building for Cloudflare ==="
 
-# Force the correct Clerk test keys
-export NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA"
-export NEXT_PUBLIC_CLERK_DOMAIN="clean-stang-14-51.clerk.accounts.dev"
+# Load environment variables from .env.production if they're not already set
+if [ -f .env.production ]; then
+  export $(grep -v '^#' .env.production | xargs)
+fi
+
+# Clerk key should be set via environment variables or CI/CD secrets
+# Do not hardcode keys here
+if [ -z "$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" ]; then
+  echo "WARNING: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY not set"
+fi
 
 # Unset any conflicting variables
 unset CLERK_PUBLISHABLE_KEY
 unset CLERK_SECRET_KEY
+unset NEXT_PUBLIC_CLERK_DOMAIN
 
 echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}"
-echo "NEXT_PUBLIC_CLERK_DOMAIN=${NEXT_PUBLIC_CLERK_DOMAIN}"
 
 # Build with OpenNext
 npx @opennextjs/cloudflare build

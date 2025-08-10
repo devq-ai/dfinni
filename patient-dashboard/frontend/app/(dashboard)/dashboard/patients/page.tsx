@@ -1,3 +1,4 @@
+// Last Updated: 2025-08-09T20:12:00-06:00
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -155,7 +156,7 @@ export default function PatientsPage() {
       (patient.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       patient.mrn.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || patient.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || patient.status.toLowerCase() === statusFilter.toLowerCase();
     
     return matchesSearch && matchesStatus;
   });

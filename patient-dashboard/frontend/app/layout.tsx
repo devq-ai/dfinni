@@ -1,4 +1,4 @@
-// Updated: 2025-08-05T22:30:00-06:00
+// Last Updated: 2025-08-09T20:12:00-06:00
 import { type Metadata } from 'next'
 import { Inter, Space_Mono } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
@@ -30,16 +30,18 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-  const isProduction = process.env.NODE_ENV === 'production';
-  const basePath = isProduction ? '/pfinni' : '';
+  const signInUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL;
+  const signUpUrl = process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL;
+  const afterSignInUrl = process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL;
+  const afterSignUpUrl = process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL;
   
   return (
     <ClerkProvider 
       publishableKey={publishableKey}
-      signInUrl={`${basePath}/sign-in`}
-      signUpUrl={`${basePath}/sign-up`}
-      afterSignInUrl={`${basePath}/dashboard`}
-      afterSignUpUrl={`${basePath}/dashboard`}
+      signInUrl={signInUrl}
+      signUpUrl={signUpUrl}
+      signInFallbackRedirectUrl={afterSignInUrl}
+      signUpFallbackRedirectUrl={afterSignUpUrl}
     >
       <html lang="en" className="dark">
         <body className={`${inter.variable} ${spaceMono.variable}`}>

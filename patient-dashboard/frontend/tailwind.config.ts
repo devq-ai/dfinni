@@ -1,3 +1,4 @@
+// Last Updated: 2025-08-09T20:12:00-06:00
 import type { Config } from "tailwindcss"
 
 const config: Config = {

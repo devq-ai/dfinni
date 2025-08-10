@@ -1,3 +1,4 @@
+// Last Updated: 2025-08-09T20:12:00-06:00
 import KBar from '@/components/kbar';
 import AppSidebar from '@/components/layout/app-sidebar';
 import Header from '@/components/layout/header';
@@ -7,8 +8,8 @@ import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: 'Next Shadcn Dashboard Starter',
-  description: 'Basic dashboard with Next.js and Shadcn'
+  title: 'Pfinni Dashboard',
+  description: 'Healthcare patient management dashboard'
 };
 
 export default async function DashboardLayout({

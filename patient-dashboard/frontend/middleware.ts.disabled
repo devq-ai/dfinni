@@ -1,0 +1,60 @@
+// Last Updated: 2025-08-09T20:12:00-06:00
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
+
+// Only these routes are accessible without authentication
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/api/webhooks(.*)',
+  '/api/test',
+  '/diagnostic',
+  '/test-deployment'
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+  
+  const pathname = req.nextUrl.pathname;
+  const isPublic = isPublicRoute(req);
+
+  // Protect all routes except the public ones
+  if (!isPublic && !userId) {
+    // For API routes, return 401 Unauthorized
+    if (pathname.startsWith('/api')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    // For all other routes, redirect to sign-in
+    const signInUrl = new URL('/sign-in', req.url);
+    signInUrl.searchParams.set('redirect_url', pathname);
+    return NextResponse.redirect(signInUrl);
+  }
+  
+  // Logged in users trying to access auth pages get redirected to dashboard
+  if (userId && (
+    pathname === '/sign-in' || 
+    pathname.startsWith('/sign-in/') ||
+    pathname === '/sign-up' || 
+    pathname.startsWith('/sign-up/')
+  )) {
+    // Check if there's a redirect_url parameter
+    const redirectUrl = req.nextUrl.searchParams.get('redirect_url');
+    if (redirectUrl && !redirectUrl.includes('sign-in') && !redirectUrl.includes('sign-up')) {
+      // Redirect to the requested URL
+      return NextResponse.redirect(new URL(redirectUrl, req.url));
+    }
+    // Otherwise redirect to dashboard
+    return NextResponse.redirect(new URL('/dashboard', req.url));
+  }
+});
+
+export const config = {
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)',
+  ],
+};

@@ -9,7 +9,7 @@ Deploy Next.js app with Clerk authentication to Cloudflare Workers at https://de
 1. **Clerk Dashboard Settings**:
    - Add custom domain: `clerk.devq.ai`
    - Instance: Production
-   - Publishable Key: `pk_live_Y2xlcmsuZGV2cS5haSQ` (encodes clerk.devq.ai)
+   - Publishable Key: `<YOUR_CLERK_PUBLISHABLE_KEY>` (encodes clerk.devq.ai)
 
 2. **Required DNS (in Cloudflare)**:
    ```

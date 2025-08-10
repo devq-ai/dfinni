@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Debug Test</title>
+    <script>
+        async function testAPI() {
+            const apiUrl = 'https://db.devq.ai';
+            const log = document.getElementById('log');
+            
+            function logMessage(message) {
+                log.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+            }
+            
+            try {
+                logMessage('Testing dashboard stats API...');
+                const response1 = await fetch(`${apiUrl}/api/v1/test-dashboard-stats`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response1.ok) {
+                    const data1 = await response1.json();
+                    logMessage('Dashboard stats success: ' + JSON.stringify(data1, null, 2));
+                } else {
+                    logMessage('Dashboard stats failed: ' + response1.status + ' ' + response1.statusText);
+                    const errorText = await response1.text();
+                    logMessage('Error details: ' + errorText);
+                }
+                
+                logMessage('Testing alerts stats API...');
+                const response2 = await fetch(`${apiUrl}/api/v1/test-alerts-stats`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response2.ok) {
+                    const data2 = await response2.json();
+                    logMessage('Alerts stats success: ' + JSON.stringify(data2, null, 2));
+                } else {
+                    logMessage('Alerts stats failed: ' + response2.status + ' ' + response2.statusText);
+                }
+                
+            } catch (error) {
+                logMessage('Network error: ' + error.message);
+            }
+        }
+        
+        window.onload = function() {
+            testAPI();
+        };
+    </script>
+</head>
+<body>
+    <h1>API Debug Test</h1>
+    <button onclick="testAPI()">Test Again</button>
+    <div id="log" style="background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; white-space: pre-wrap;"></div>
+</body>
+</html>

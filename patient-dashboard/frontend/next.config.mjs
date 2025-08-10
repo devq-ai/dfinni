@@ -1,22 +1,23 @@
-// Updated: 2025-08-05T22:35:00-06:00
+// Last Updated: 2025-08-09T20:12:00-06:00
 /** @type {import('next').NextConfig} */
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 // Debug logging
 console.log('=== NEXT CONFIG LOADING ===');
 console.log('next.config.mjs - NODE_ENV:', process.env.NODE_ENV);
 console.log('next.config.mjs - isDevelopment:', isDevelopment);
 console.log('next.config.mjs - isProduction:', isProduction);
+console.log('next.config.mjs - basePath:', basePath);
 console.log('next.config.mjs - All env vars:', Object.keys(process.env).filter(k => k.includes('NODE') || k.includes('NEXT')));
 console.log('==========================');
 
 const nextConfig = {
-  // Only use basePath in production for Cloudflare deployment
-  ...(isProduction && {
-    basePath: '/pfinni',
-    assetPrefix: '/pfinni',
+  // Use basePath from environment variable if set
+  ...(basePath && {
+    basePath: basePath,
   }),
   
   // Enable React strict mode for better development experience

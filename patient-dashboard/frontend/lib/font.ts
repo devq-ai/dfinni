@@ -1,20 +1,26 @@
+// Last Updated: 2025-08-09T20:12:00-06:00
 import {
-  Geist,
-  Geist_Mono,
+  // Geist fonts not available in Next.js 14
+  // Geist,
+  // Geist_Mono,
   Instrument_Sans,
   Inter,
   Mulish,
-  Noto_Sans_Mono
+  Noto_Sans_Mono,
+  Source_Sans_3,
+  Source_Code_Pro
 } from 'next/font/google';
 
 import { cn } from '@/lib/utils';
 
-const fontSans = Geist({
+// Use Source Sans as alternative to Geist
+const fontSans = Source_Sans_3({
   subsets: ['latin'],
   variable: '--font-sans'
 });
 
-const fontMono = Geist_Mono({
+// Use Source Code Pro as alternative to Geist Mono
+const fontMono = Source_Code_Pro({
   subsets: ['latin'],
   variable: '--font-mono'
 });

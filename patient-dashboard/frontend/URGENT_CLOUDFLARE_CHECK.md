@@ -1,6 +1,6 @@
 # URGENT: Check Cloudflare Dashboard
 
-The wrong key (`pk_live_Y2xlcmsuZGV2cS5haSQ`) is STILL being used even after:
+The wrong key (`<YOUR_CLERK_PUBLISHABLE_KEY>`) is STILL being used even after:
 1. Deleting GitHub secret ✓
 2. Renaming .env.pfinni-demo ✓
 3. Forcing correct values in deployment ✓

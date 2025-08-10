@@ -1,3 +1,4 @@
+# Last Updated: 2025-08-09T20:12:00-06:00
 # PFINNI Dashboard - Cloudflare Workers Configuration
 # This is the ONLY wrangler.toml to use for deployment
 
@@ -6,7 +7,7 @@ main = ".open-next/worker.js"
 compatibility_date = "2024-12-30"
 compatibility_flags = ["nodejs_compat"]
 
-# Static assets configuration - MUST use [assets] not [site]
+# Static assets configuration
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"
@@ -16,9 +17,9 @@ binding = "ASSETS"
 binding = "NEXT_CACHE_WORKERS_KV"
 id = "3e3333eba2c34b5193271f6f51dd811f"
 
-# Route configuration
+# Route configuration for subdomain
 [[routes]]
-pattern = "devq.ai/pfinni*"
+pattern = "pfinni.devq.ai/*"
 zone_name = "devq.ai"
 
 # Environment Variables
@@ -27,16 +28,14 @@ ENVIRONMENT = "production"
 NODE_ENV = "production"
 NEXT_PUBLIC_API_URL = "https://db.devq.ai"
 
-# Using a different Clerk test instance
-# This key should override any cached or injected values
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_Y2xlYW4tc3RhbmctMTQtNTEuY2xlcmsuYWNjb3VudHMuZGV2JA"
-NEXT_PUBLIC_CLERK_DOMAIN = "clean-stang-14-51.clerk.accounts.dev"
+# Clerk configuration
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = "pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk"
 
-# Clerk URLs with basePath
-NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/pfinni/sign-in"
-NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/pfinni/sign-up"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/pfinni/dashboard"
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = "/pfinni/dashboard"
+# Clerk URLs
+NEXT_PUBLIC_CLERK_SIGN_IN_URL = "/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL = "/sign-up"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL = "/dashboard"
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL = "/dashboard"
 
 # Production placement
 [placement]

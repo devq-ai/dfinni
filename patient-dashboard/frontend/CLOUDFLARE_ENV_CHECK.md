@@ -1,6 +1,6 @@
 # Cloudflare Environment Variable Issue
 
-The deployment is still using `pk_live_Y2xlcmsuZGV2cS5haSQ` even after:
+The deployment is still using `<YOUR_CLERK_PUBLISHABLE_KEY>` even after:
 1. Deleting the GitHub secret
 2. Setting correct values in wrangler.toml
 3. Forcing values in the deployment script
@@ -27,4 +27,4 @@ The deployment is still using `pk_live_Y2xlcmsuZGV2cS5haSQ` even after:
 2. If found, delete `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
 3. Redeploy
 
-The key `pk_live_Y2xlcmsuZGV2cS5haSQ` expects the domain `clerk.devq.ai` which doesn't exist, causing 401 errors.
+The key `<YOUR_CLERK_PUBLISHABLE_KEY>` expects the domain `clerk.devq.ai` which doesn't exist, causing 401 errors.

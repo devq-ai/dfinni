@@ -1,7 +1,7 @@
 # GitHub Secret Update Required
 
 The deployment is using the wrong Clerk publishable key. The debug page shows:
-- Current key: `pk_live_Y2xlcmsuZGV2cS5haSQ` (expects clerk.devq.ai domain)
+- Current key: `<YOUR_CLERK_PUBLISHABLE_KEY>` (expects clerk.devq.ai domain)
 - Needed key: `pk_test_bGVuaWVudC1zdG9yay00NS5jbGVyay5hY2NvdW50cy5kZXYk`
 
 ## Action Required:
