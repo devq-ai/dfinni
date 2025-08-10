@@ -69,8 +69,8 @@ async def get_test_dashboard_stats():
         # Count total patients
         total_patients = len(all_patients)
         
-        # Count active patients (status = 'active' only)
-        active_patients = sum(1 for p in all_patients if p.get('status', '').lower() == 'active')
+        # Count active patients (status = 'ACTIVE' only)
+        active_patients = sum(1 for p in all_patients if p.get('status', '') == 'ACTIVE')
         
         # Count high risk patients (risk_level = 'High' AND status != 'churned')
         high_risk_patients = sum(1 for p in all_patients 
@@ -217,10 +217,10 @@ async def get_test_alerts_stats():
         # Get actual alert counts from database
         stats_queries = {
             'total': "SELECT count() as count FROM alert GROUP ALL",
-            'unread': "SELECT count() as count FROM alert WHERE (read = false OR read = null) GROUP ALL",
-            'critical': "SELECT count() as count FROM alert WHERE severity = 'critical' GROUP ALL",
-            'pending_action': "SELECT count() as count FROM alert WHERE requires_action = true GROUP ALL",
-            'active': "SELECT count() as count FROM alert WHERE status = 'active' GROUP ALL"
+            'unread': "SELECT count() as count FROM alert WHERE (is_read = false OR is_read = null) GROUP ALL",
+            'critical': "SELECT count() as count FROM alert WHERE priority = 'URGENT' GROUP ALL",
+            'pending_action': "SELECT count() as count FROM alert WHERE is_acknowledged = false GROUP ALL",
+            'active': "SELECT count() as count FROM alert WHERE is_acknowledged = false GROUP ALL"
         }
         
         stats_results = {}
@@ -233,7 +233,7 @@ async def get_test_alerts_stats():
         
         # Get recent alerts
         alerts_result = await db.execute(
-            "SELECT * FROM alert WHERE status = 'active' ORDER BY created_at DESC LIMIT 5"
+            "SELECT * FROM alert WHERE is_acknowledged = false ORDER BY created_at DESC LIMIT 5"
         )
         
         alerts = []
@@ -242,13 +242,13 @@ async def get_test_alerts_stats():
                 alerts.append({
                     'id': str(alert_data.get('id', '')).split(':')[-1] if alert_data.get('id') else None,
                     'type': alert_data.get('type', 'unknown'),
-                    'severity': alert_data.get('severity', 'medium'),
+                    'severity': alert_data.get('priority', 'MEDIUM').lower(),
                     'title': alert_data.get('title', ''),
-                    'description': alert_data.get('description', ''),
+                    'description': alert_data.get('message', ''),
                     'patient_id': alert_data.get('patient_id'),
                     'patient_name': alert_data.get('patient_name'),
                     'created_at': alert_data.get('created_at').isoformat() if alert_data.get('created_at') else None,
-                    'status': alert_data.get('status', 'active')
+                    'status': 'acknowledged' if alert_data.get('is_acknowledged') else 'new'
                 })
         
         # Log to Logfire
@@ -286,4 +286,76 @@ async def get_test_alerts_stats():
                     "pending_action": 0
                 }
             }
+        }
+
+@router.get("/test-providers", response_model=None)
+async def get_test_providers():
+    """Get providers data without authentication for testing"""
+    from app.database.connection import get_database
+    
+    try:
+        db = await get_database()
+        
+        # Get all providers (users with role PROVIDER)
+        providers_result = await db.execute("SELECT * FROM user WHERE role = 'PROVIDER' ORDER BY created_at DESC")
+        
+        # Debug: get all users to see what roles exist
+        all_users = await db.execute("SELECT id, email, role FROM user")
+        print(f"DEBUG all_users: {all_users}")
+        print(f"DEBUG providers_result: {providers_result}")
+        logfire.info(
+            "test_providers_debug",
+            all_users_count=len(all_users) if all_users else 0,
+            providers_count=len(providers_result) if providers_result else 0
+        )
+        
+        providers = []
+        if providers_result:
+            for provider_data in providers_result:
+                # Get assigned patients count for this provider
+                provider_id = str(provider_data.get('id', ''))
+                provider_id_part = provider_id.split(':')[-1] if ':' in provider_id else provider_id
+                patient_count_result = await db.execute(
+                    f"SELECT count() as count FROM patient WHERE assigned_provider = user:{provider_id_part} GROUP ALL"
+                )
+                patient_count = patient_count_result[0].get('count', 0) if patient_count_result else 0
+                
+                providers.append({
+                    'id': provider_id_part,
+                    'firstName': provider_data.get('first_name', ''),
+                    'lastName': provider_data.get('last_name', ''),
+                    'email': provider_data.get('email', ''),
+                    'role': 'doctor',  # Map PROVIDER to doctor for frontend
+                    'specialization': provider_data.get('specialization', ''),
+                    'licenseNumber': f"MD{provider_id_part[:6].upper()}",
+                    'department': provider_data.get('specialization', 'General'),
+                    'status': 'active' if provider_data.get('is_active', True) else 'inactive',
+                    'assignedPatients': [],  # Would need to query separately
+                    'patientCount': patient_count,
+                    'createdAt': provider_data.get('created_at').isoformat() if provider_data.get('created_at') else None,
+                    'updatedAt': provider_data.get('updated_at').isoformat() if provider_data.get('updated_at') else None
+                })
+        
+        # Log to Logfire
+        logfire.info(
+            "test_providers_real",
+            providers_count=len(providers),
+            service="pfinni-patient-dashboard",
+            endpoint="/test-providers"
+        )
+        
+        return {
+            "providers": providers,
+            "total": len(providers),
+            "page": 1,
+            "pageSize": 10
+        }
+        
+    except Exception as e:
+        logfire.error(f"Failed to get test providers: {str(e)}")
+        return {
+            "providers": [],
+            "total": 0,
+            "page": 1,
+            "pageSize": 10
         }

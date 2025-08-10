@@ -6,7 +6,7 @@ export const config = {
   // API Configuration
   apiUrl: process.env.NEXT_PUBLIC_API_URL || 
     (process.env.NODE_ENV === 'production' 
-      ? 'https://api.devq.ai' 
+      ? 'https://db.devq.ai' 
       : 'http://localhost:8001'),
   
   // Application Name

@@ -80,3 +80,39 @@ async def get_test_patients(
             has_next=False,
             has_prev=False
         )
+
+@router.get("/test-patients-raw", response_model=None)
+async def get_test_patients_raw():
+    """Get raw patients data without authentication for testing"""
+    try:
+        db = await get_database()
+        
+        # Get all patients
+        result = await db.execute("SELECT * FROM patient ORDER BY created_at DESC")
+        
+        patients = []
+        if result:
+            for patient_data in result:
+                # Convert RecordID to string
+                if 'id' in patient_data:
+                    patient_data['id'] = str(patient_data['id']).split(':')[-1] if ':' in str(patient_data['id']) else str(patient_data['id'])
+                
+                # Convert status to lowercase for frontend compatibility
+                if 'status' in patient_data and patient_data['status']:
+                    patient_data['status'] = patient_data['status'].lower()
+                
+                patients.append(patient_data)
+        
+        return {
+            "patients": patients,
+            "count": len(patients)
+        }
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {
+            "patients": [],
+            "count": 0,
+            "error": str(e)
+        }

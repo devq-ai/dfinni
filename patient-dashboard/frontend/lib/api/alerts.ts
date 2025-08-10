@@ -1,7 +1,7 @@
 // Last Updated: 2025-08-09T20:12:00-06:00
 import { Alert, AlertListResponse, CreateAlertDto } from '@/types/alert'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
+const API_BASE_URL = 'https://db.devq.ai'
 
 export const alertsApi = {
   async getAlerts(getHeaders: () => Promise<HeadersInit>, page = 1, pageSize = 10, status?: string): Promise<AlertListResponse> {

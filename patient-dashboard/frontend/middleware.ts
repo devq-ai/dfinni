@@ -1,8 +1,21 @@
-// Last Updated: 2025-08-09T20:53:00-06:00
-import { clerkMiddleware } from '@clerk/nextjs/server';
+// Last Updated: 2025-08-10T05:57:00-06:00
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
-// Minimal middleware - allow all routes
-export default clerkMiddleware();
+const isProtectedRoute = createRouteMatcher([
+  '/dashboard(.*)',
+  '/patients(.*)',
+  '/alerts(.*)',
+  '/reports(.*)',
+  '/settings(.*)',
+  '/profile(.*)',
+  '/overview(.*)'
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [

@@ -177,6 +177,7 @@ ENVIRONMENT=development
 
 ### Current Deployment Status
 
+- **🌟 Live Demo**: **[https://pfinni.devq.ai/dashboard](https://pfinni.devq.ai/dashboard)** 
 - **Production URL**: https://pfinni.devq.ai/ (Live and operational)
 - **Worker Name**: pfinni-dashboard-demo  
 - **Route**: pfinni.devq.ai/*

@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
     model_config = SettingsConfigDict(
-        env_file="/Users/dionedge/devqai/.env",  # Single .env file location per Production Proposal
+        env_file=".env",  # Load from current directory
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore"
@@ -59,7 +59,7 @@ class Settings(BaseSettings):
 
     # CORS Settings  
     CORS_ORIGINS: str = Field(
-        default="http://localhost:3000,https://devq.ai,https://db.devq.ai",
+        default="http://localhost:3000,http://localhost:3001,https://devq.ai,https://db.devq.ai,https://pfinni.devq.ai",
         env="PFINNI_CORS_ORIGINS",
     )
     CORS_CREDENTIALS: bool = Field(default=True, env="PFINNI_CORS_CREDENTIALS")

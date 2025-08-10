@@ -8,7 +8,7 @@ from typing import Any, Dict
 
 # Set LOGFIRE_TOKEN before importing logfire
 from dotenv import load_dotenv
-load_dotenv('/Users/dionedge/devqai/.env')
+load_dotenv('.env')  # Load from current directory
 if os.getenv('PFINNI_LOGFIRE_TOKEN'):
     os.environ['LOGFIRE_TOKEN'] = os.getenv('PFINNI_LOGFIRE_TOKEN')
 

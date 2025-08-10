@@ -136,8 +136,10 @@ export function usePatientsApi() {
         appointmentsToday: { value: string; isUp: boolean };
       };
     }> {
-      const response = await fetch(`${API_BASE_URL}/api/v1/dashboard/stats`, {
-        headers: await getAuthHeaders(),
+      const response = await fetch(`${API_BASE_URL}/api/v1/test-dashboard-stats`, {
+        headers: {
+          'Content-Type': 'application/json'
+        },
       })
       
       if (!response.ok) {

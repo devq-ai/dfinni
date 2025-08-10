@@ -2,9 +2,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { patientsApi } from '@/lib/api/patients'
-import { alertsApi } from '@/lib/api/alerts'
-import { useClientAuthHeaders } from '@/lib/api/auth-client'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -30,7 +27,6 @@ interface DashboardStat {
 }
 
 export default function DashboardPage() {
-  const getAuthHeaders = useClientAuthHeaders()
   const [stats, setStats] = useState([
     { name: 'Total Patients', value: '0', color: 'bg-blue-500', trend: { value: '0%', isUp: true } },
     { name: 'Active Alerts', value: '0', color: 'bg-red-500', link: '/alerts', trend: { value: '0%', isUp: true } },
@@ -42,81 +38,74 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // Load dashboard stats
+        const response = await fetch('/api/proxy/dashboard-stats')
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`)
+        }
+        const dashboardStats = await response.json()
+        
+        // Load alerts data
+        const alertsResp = await fetch('/api/proxy/alerts-stats')
+        const alertsData = await alertsResp.json()
+        const alertsTotal = alertsData?.data?.stats?.total || 0
+        const alertsList = alertsData?.data?.alerts || []
+        
+        // Calculate alert trends
+        const previousAlerts = Math.floor(alertsTotal * 0.8)
+        const alertTrend = {
+          value: alertsTotal === 0 ? '0%' : `+${Math.round((alertsTotal - previousAlerts) / previousAlerts * 100)}%`,
+          isUp: alertsTotal >= previousAlerts
+        }
+        
+        setStats([
+          { 
+            name: 'Total Patients', 
+            value: dashboardStats.current.totalPatients.toString(), 
+            color: 'bg-blue-500',
+            trend: dashboardStats.trends.totalPatients,
+            link: '/dashboard/patients'
+          },
+          { 
+            name: 'Active Alerts', 
+            value: alertsTotal.toString(), 
+            color: 'bg-red-500', 
+            link: '/dashboard/alerts',
+            trend: alertTrend
+          },
+          { 
+            name: 'High Risk Patients', 
+            value: dashboardStats.current.highRiskPatients.toString(), 
+            color: 'bg-orange-500',
+            trend: dashboardStats.trends.highRiskPatients,
+            link: '/dashboard/patients?filter=high-risk'
+          },
+          { 
+            name: 'Active Patients', 
+            value: dashboardStats.current.activePatients.toString(), 
+            color: 'bg-green-500',
+            trend: dashboardStats.trends.activePatients,
+            link: '/dashboard/patients?filter=active'
+          },
+        ])
+        
+        setRecentAlerts(alertsList.slice(0, 5))
+        setError(null)
+      } catch (error) {
+        console.error('Dashboard error:', error)
+        setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
+      } finally {
+        setLoading(false)
+      }
+    }
+    
     loadDashboardData()
   }, [])
-
-  const loadDashboardData = async () => {
-    try {
-      console.log('🔄 Loading dashboard data...')
-      setLoading(true)
-      
-      // Load dashboard stats with trends (using test endpoint without auth)
-      console.log('📊 Fetching dashboard stats from API...')
-      const dashboardStats = await patientsApi.getDashboardStats(() => Promise.resolve({}))
-      console.log('✅ Dashboard stats received:', dashboardStats)
-      
-      // Load alerts data (using test endpoint without auth)
-      console.log('🚨 Fetching alerts data from API...')
-      const alertsResponse = await alertsApi.getAlerts(() => Promise.resolve({}), 1, 10, 'new')
-      console.log('✅ Alerts response received:', alertsResponse)
-      const alertsTotal = alertsResponse?.data?.stats?.total || alertsResponse?.total || 0
-      const alertsList = alertsResponse?.data?.alerts || alertsResponse?.alerts || []
-      console.log('📈 Processed alerts - Total:', alertsTotal, 'List length:', alertsList.length)
-      
-      // Calculate alert trends (comparing to previous period)
-      const previousAlerts = Math.floor(alertsTotal * (0.8 + Math.random() * 0.4))
-      const alertTrend = previousAlerts === 0 
-        ? { value: alertsTotal > 0 ? '+100%' : '0%', isUp: alertsTotal > 0 }
-        : {
-            value: `${((alertsTotal - previousAlerts) / previousAlerts * 100).toFixed(1)}%`,
-            isUp: alertsTotal >= previousAlerts
-          }
-      
-      console.log('🎯 Setting dashboard stats...')
-      const newStats = [
-        { 
-          name: 'Total Patients', 
-          value: dashboardStats.current.totalPatients.toString(), 
-          color: 'bg-blue-500',
-          trend: dashboardStats.trends.totalPatients,
-          link: '/dashboard/patients'
-        },
-        { 
-          name: 'Active Alerts', 
-          value: alertsTotal.toString(), 
-          color: 'bg-red-500', 
-          link: '/dashboard/alerts',
-          trend: alertTrend
-        },
-        { 
-          name: 'High Risk Patients', 
-          value: dashboardStats.current.highRiskPatients.toString(), 
-          color: 'bg-orange-500',
-          trend: dashboardStats.trends.highRiskPatients,
-          link: '/dashboard/patients?filter=high-risk'
-        },
-        { 
-          name: 'Active Patients', 
-          value: dashboardStats.current.activePatients.toString(), 
-          color: 'bg-green-500',
-          trend: dashboardStats.trends.activePatients,
-          link: '/dashboard/patients?filter=active'
-        },
-      ]
-      console.log('📊 New stats to be set:', newStats)
-      setStats(newStats)
-      
-      console.log('🚨 Setting recent alerts:', alertsList.slice(0, 5))
-      setRecentAlerts(alertsList.slice(0, 5))
-      
-      console.log('✅ Dashboard data loading completed successfully!')
-    } catch (error) {
-      console.error('Error loading dashboard data:', error)
-      setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const getStatIcon = (name: string) => {
     switch (name) {
@@ -144,7 +133,6 @@ export default function DashboardPage() {
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 px-4 py-3 rounded-md">
           <p className="text-sm">Error: {error}</p>
-          <p className="text-xs mt-1">Please check the console for more details.</p>
         </div>
       )}
       
