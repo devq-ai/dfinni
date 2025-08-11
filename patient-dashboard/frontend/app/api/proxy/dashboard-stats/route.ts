@@ -20,6 +20,13 @@ export async function GET() {
       },
     })
     
+    if (!response.ok) {
+      console.error('Backend error:', response.status, response.statusText)
+      const errorText = await response.text()
+      console.error('Error details:', errorText)
+      throw new Error(`Backend returned ${response.status}`)
+    }
+    
     const data = await response.json()
     
     return NextResponse.json(data, {
@@ -31,8 +38,9 @@ export async function GET() {
       },
     })
   } catch (error) {
+    console.error('Dashboard stats error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard stats' },
+      { error: 'Failed to fetch dashboard stats', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

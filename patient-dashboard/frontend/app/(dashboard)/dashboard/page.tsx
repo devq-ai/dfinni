@@ -14,6 +14,7 @@ import {
   ArrowDownRight,
   TrendingUp
 } from 'lucide-react'
+import { config } from '@/lib/config'
 
 interface DashboardStat {
   name: string
@@ -43,15 +44,25 @@ export default function DashboardPage() {
         setLoading(true)
         setError(null)
         
-        // Load dashboard stats
-        const response = await fetch('/api/proxy/dashboard-stats')
+        // Load dashboard stats directly from backend
+        const response = await fetch(`${config.apiUrl}/api/v1/test-dashboard-stats`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        })
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`)
         }
         const dashboardStats = await response.json()
         
-        // Load alerts data
-        const alertsResp = await fetch('/api/proxy/alerts-stats')
+        // Load alerts data directly from backend
+        const alertsResp = await fetch(`${config.apiUrl}/api/v1/test-alerts-stats`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        })
         const alertsData = await alertsResp.json()
         const alertsTotal = alertsData?.data?.stats?.total || 0
         const alertsList = alertsData?.data?.alerts || []
