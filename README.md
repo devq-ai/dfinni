@@ -12,7 +12,7 @@ A modern, HIPAA-compliant patient management system with AI-powered assistance f
 
 Demo credentials:
 - **Email**: demo@user.com
-- **Password**: Password123!
+- **Password**: DemoUser2025!Secure
 
 ## 🚀 Features
 
