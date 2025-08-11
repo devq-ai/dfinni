@@ -45,25 +45,46 @@ export default function DashboardPage() {
         setError(null)
         
         // Load dashboard stats directly from backend
+        console.log('Fetching dashboard stats from:', `${config.apiUrl}/api/v1/test-dashboard-stats`)
         const response = await fetch(`${config.apiUrl}/api/v1/test-dashboard-stats`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           credentials: 'include',
+          mode: 'cors',
         })
+        
         if (!response.ok) {
-          throw new Error(`API error: ${response.status}`)
+          const errorText = await response.text()
+          console.error('Dashboard stats response error:', response.status, errorText)
+          throw new Error(`API error: ${response.status} - ${errorText}`)
         }
+        
         const dashboardStats = await response.json()
+        console.log('Dashboard stats loaded:', dashboardStats)
         
         // Load alerts data directly from backend
+        console.log('Fetching alerts stats from:', `${config.apiUrl}/api/v1/test-alerts-stats`)
         const alertsResp = await fetch(`${config.apiUrl}/api/v1/test-alerts-stats`, {
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
           },
           credentials: 'include',
+          mode: 'cors',
         })
+        
+        if (!alertsResp.ok) {
+          const errorText = await alertsResp.text()
+          console.error('Alerts stats response error:', alertsResp.status, errorText)
+          throw new Error(`Alerts API error: ${alertsResp.status} - ${errorText}`)
+        }
+        
         const alertsData = await alertsResp.json()
+        console.log('Alerts stats loaded:', alertsData)
         const alertsTotal = alertsData?.data?.stats?.total || 0
         const alertsList = alertsData?.data?.alerts || []
         
@@ -109,7 +130,19 @@ export default function DashboardPage() {
         setError(null)
       } catch (error) {
         console.error('Dashboard error:', error)
-        setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
+        console.error('API URL:', config.apiUrl)
+        console.error('Full error details:', {
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined,
+          error
+        })
+        
+        // More specific error message
+        if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+          setError('Failed to fetch - Please check network connection and CORS settings')
+        } else {
+          setError(error instanceof Error ? error.message : 'Failed to load dashboard data')
+        }
       } finally {
         setLoading(false)
       }
